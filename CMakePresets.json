@@ -1,0 +1,99 @@
+{
+  "version": 2,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "debug",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "relwithdebinfo",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "release",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "libchirp-binary",
+      "hidden": true,
+      "cacheVariables": {
+        "CHIRP_BUILD_BINARY_LIB": true
+      }
+    },
+    {
+      "name": "libchirp-binary-debug",
+      "displayName": "libchirp-binary (debug)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "inherits": [
+        "debug",
+        "libchirp-binary"
+      ]
+    },
+    {
+      "name": "libchirp-ir",
+      "hidden": true,
+      "cacheVariables": {
+        "CHIRP_BUILD_IR_LIB": true
+      }
+    },
+    {
+      "name": "libchirp-ir-debug",
+      "displayName": "libchirp-ir (debug)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "inherits": [
+        "debug",
+        "libchirp-ir"
+      ]
+    },
+    {
+      "name": "chirp-cli",
+      "hidden": true,
+      "cacheVariables": {
+        "CHIRP_BUILD_CLI": true
+      }
+    },
+    {
+      "name": "chirp-cli-debug",
+      "displayName": "chirp-cli (debug)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "inherits": [
+        "debug",
+        "chirp-cli"
+      ]
+    },
+    {
+      "name": "chirp-full-debug",
+      "displayName": "chirp (debug)",
+      "inherits": [
+        "libchirp-binary-debug",
+        "libchirp-ir-debug",
+        "chirp-cli-debug"
+      ]
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "chirp-default-debug",
+      "configurePreset": "chirp-full-debug",
+      "description": "Full CHIRP debug build",
+      "displayName": "CHIRP (debug)"
+    }
+  ]
+}
