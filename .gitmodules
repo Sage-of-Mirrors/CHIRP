@@ -1,0 +1,3 @@
+[submodule "extern/athena"]
+	path = extern/athena
+	url = git@github.com:libAthena/athena.git
