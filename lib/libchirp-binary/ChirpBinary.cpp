@@ -42,16 +42,16 @@ bool chirp::binary::ChirpBinary::Import(athena::io::IStreamReader& inStream)
     m_verMajor = inStream.readUint16();
     m_verMinor = inStream.readUint16();
 
-    u32 m_totalSize = inStream.readUint32();
-    u32 m_sectionCount = inStream.readUint32();
+    u32 totalSize = inStream.readUint32();
+    u32 sectionCount = inStream.readUint32();
 
     // The header for a CHIRB file currently only uses 16 bytes,
     // but 32 total bytes are reserved for future use.
     inStream.seek(0x10);
 
-    for (u32 i = 0; i < m_sectionCount; i++)
+    for (u32 i = 0; i < sectionCount; i++)
     {
-        if (inStream.position() >= m_totalSize)
+        if (inStream.position() >= totalSize)
         {
             std::cerr << "ChirpBinary import stream has gone outside the bounds of"
                          " the file." << std::endl;
