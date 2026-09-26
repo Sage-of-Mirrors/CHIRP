@@ -2,40 +2,42 @@
 
 #include <format>
 
-void ChirpTextModelSchema::validate(const ChirpTextDocument& document, ChirpTextDiagnosticBag& diagnostics) const {
+namespace chirp::text {
+void ChirpTextModelSchema::Validate(const ChirpTextDocument& document, ChirpDiagnosticBag& diagnostics) const {
   if (document.mTypeName != "chirp_model") {
-    diagnostics.error(document.mSpan, "expected document type 'chirp_model'");
+    diagnostics.Error(document.mSpan, "expected document type 'chirp_model'");
     return;
   }
 
   for (const auto& section : document.mSections) {
     if (section.mCounts.empty()) {
-      diagnostics.warning(section.mSpan, std::format("section '{}' has no count declaration", section.mName));
+      diagnostics.Warning(section.mSpan, std::format("section '{}' has no count declaration", section.mName));
       continue;
     }
 
     const auto expected = section.mCounts.front().mValue;
     if (expected < 0) {
-      diagnostics.error(section.mCounts.front().mSpan, "count cannot be negative");
+      diagnostics.Error(section.mCounts.front().mSpan, "count cannot be negative");
       continue;
     }
 
     if (static_cast<std::size_t>(expected) != section.mRows.size()) {
-      diagnostics.error(section.mSpan, "declared count does not match number of rows");
+      diagnostics.Error(section.mSpan, "declared count does not match number of rows");
     }
   }
 
-  if (const auto* vertices = document.findSection("vertices")) {
+  if (const auto* vertices = document.FindSection("vertices")) {
     for (const auto& [fields, span] : vertices->mRows) {
       if (fields.size() != 4)
-        diagnostics.error(span, "vertex rows require four fields");
+        diagnostics.Error(span, "vertex rows require four fields");
     }
   }
 
-  if (const auto* surfaces = document.findSection("surfaces")) {
+  if (const auto* surfaces = document.FindSection("surfaces")) {
     for (const auto& [fields, span] : surfaces->mRows) {
       if (fields.size() != 2)
-        diagnostics.error(span, "surface rows require two fields");
+        diagnostics.Error(span, "surface rows require two fields");
     }
   }
 }
+} // namespace chirp::text

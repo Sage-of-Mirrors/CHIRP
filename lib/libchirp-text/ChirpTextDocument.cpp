@@ -1,6 +1,7 @@
 #include "libchirp-text/ChirpTextDocument.hpp"
 
-const ChirpTextDocument::Section* ChirpTextDocument::findSection(const std::string& name) const {
+namespace chirp::text {
+const ChirpTextDocument::Section* ChirpTextDocument::FindSection(const std::string& name) const {
   for (const auto& section : mSections) {
     if (section.mName == name) {
       return &section;
@@ -9,7 +10,7 @@ const ChirpTextDocument::Section* ChirpTextDocument::findSection(const std::stri
   return nullptr;
 }
 
-ChirpTextDocument::Section* ChirpTextDocument::findSection(const std::string& name) {
+ChirpTextDocument::Section* ChirpTextDocument::FindSection(const std::string& name) {
   for (auto& section : mSections) {
     if (section.mName == name) {
       return &section;
@@ -17,3 +18,4 @@ ChirpTextDocument::Section* ChirpTextDocument::findSection(const std::string& na
   }
   return nullptr;
 }
+} // namespace chirp::text

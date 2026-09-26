@@ -2,14 +2,15 @@
 #include <cctype>
 #include <stdexcept>
 
+namespace chirp::text {
 ChirpTextLexer::ChirpTextLexer(std::string source, std::string filename)
 : mSource(std::move(source))
 , mFilename(std::move(filename)) {}
 
-char ChirpTextLexer::peek(const std::size_t offset) const { return mPosition + offset < mSource.size() ? mSource[mPosition + offset] : '\0'; }
+char ChirpTextLexer::Peek(const std::size_t offset) const { return mPosition + offset < mSource.size() ? mSource[mPosition + offset] : '\0'; }
 
-char ChirpTextLexer::advance() {
-  const char c = peek();
+char ChirpTextLexer::Advance() {
+  const char c = Peek();
   if (c == '\0') {
     return c;
   }
@@ -23,24 +24,24 @@ char ChirpTextLexer::advance() {
   return c;
 }
 
-bool ChirpTextLexer::eof() const { return mPosition >= mSource.size(); }
+bool ChirpTextLexer::EndOfFile() const { return mPosition >= mSource.size(); }
 
-void ChirpTextLexer::skipHorizontalWhitespace() {
-  while (!eof() && (peek() == ' ' || peek() == '\t' || peek() == '\r')) {
-    advance();
+void ChirpTextLexer::SkipHorizontalWhitespace() {
+  while (!EndOfFile() && (Peek() == ' ' || Peek() == '\t' || Peek() == '\r')) {
+    Advance();
   }
 }
 
-void ChirpTextLexer::lexComment(std::vector<ChirpTextToken>& out) {
+void ChirpTextLexer::LexComment(std::vector<ChirpTextToken>& out) {
   const SourceLocation begin{
       .mFile = mFilename,
       .mLine = mLine,
       .mColumn = mColumn,
   };
-  advance();
+  Advance();
   std::string text;
-  while (!eof() && peek() != '\n') {
-    text += advance();
+  while (!EndOfFile() && Peek() != '\n') {
+    text += Advance();
   }
 
   ChirpTextToken token{
@@ -60,26 +61,26 @@ void ChirpTextLexer::lexComment(std::vector<ChirpTextToken>& out) {
   out.push_back(std::move(token));
 }
 
-void ChirpTextLexer::lexString(std::vector<ChirpTextToken>& out, ChirpTextDiagnosticBag& diagnostics) {
+void ChirpTextLexer::LexString(std::vector<ChirpTextToken>& out, ChirpDiagnosticBag& diagnostics) {
   const SourceLocation begin{
       .mFile = mFilename,
       .mLine = mLine,
       .mColumn = mColumn,
   };
-  advance();
+  Advance();
   std::string value;
   bool terminated = false;
-  while (!eof()) {
-    if (peek() == '"') {
-      advance();
+  while (!EndOfFile()) {
+    if (Peek() == '"') {
+      Advance();
       terminated = true;
       break;
     }
-    if (const char c = advance(); c == '\\') {
-      if (eof()) {
+    if (const char c = Advance(); c == '\\') {
+      if (EndOfFile()) {
         break;
       }
-      switch (const char escaped = advance()) {
+      switch (const char escaped = Advance()) {
       case 'n':
         value += '\n';
         break;
@@ -105,7 +106,7 @@ void ChirpTextLexer::lexString(std::vector<ChirpTextToken>& out, ChirpTextDiagno
   }
 
   if (!terminated) {
-    diagnostics.error(
+    diagnostics.Error(
         {
             .mBegin = begin,
             .mEnd =
@@ -135,46 +136,46 @@ void ChirpTextLexer::lexString(std::vector<ChirpTextToken>& out, ChirpTextDiagno
   });
 }
 
-void ChirpTextLexer::lexNumber(std::vector<ChirpTextToken>& out) {
+void ChirpTextLexer::LexNumber(std::vector<ChirpTextToken>& out) {
   const SourceLocation begin{
       .mFile = mFilename,
       .mLine = mLine,
       .mColumn = mColumn,
   };
   std::string text;
-  if (peek() == '-' || peek() == '+') {
-    text += advance();
+  if (Peek() == '-' || Peek() == '+') {
+    text += Advance();
   }
 
-  while (std::isdigit(static_cast<unsigned char>(peek()))) {
-    text += advance();
+  while (std::isdigit(static_cast<unsigned char>(Peek()))) {
+    text += Advance();
   }
 
   bool floating = false;
-  if (peek() == '.') {
+  if (Peek() == '.') {
     floating = true;
-    text += advance();
-    while (std::isdigit(static_cast<unsigned char>(peek()))) {
-      text += advance();
+    text += Advance();
+    while (std::isdigit(static_cast<unsigned char>(Peek()))) {
+      text += Advance();
     }
   }
 
-  if (peek() == 'e' || peek() == 'E') {
+  if (Peek() == 'e' || Peek() == 'E') {
     floating = true;
-    text += advance();
-    if (peek() == '-' || peek() == '+') {
-      text += advance();
+    text += Advance();
+    if (Peek() == '-' || Peek() == '+') {
+      text += Advance();
     }
-    while (std::isdigit(static_cast<unsigned char>(peek()))) {
-      text += advance();
+    while (std::isdigit(static_cast<unsigned char>(Peek()))) {
+      text += Advance();
     }
   }
 
   // Accept the conventional C/C++ floating-point suffix used by Chirp
   // source data, e.g. 0.f and 12.5f. Keep the suffix in the token text;
   // the numeric conversion functions used by the parser accept it.
-  if (floating && (peek() == 'f' || peek() == 'F')) {
-    text += advance();
+  if (floating && (Peek() == 'f' || Peek() == 'F')) {
+    text += Advance();
   }
 
   out.push_back(ChirpTextToken{
@@ -193,16 +194,16 @@ void ChirpTextLexer::lexNumber(std::vector<ChirpTextToken>& out) {
   });
 }
 
-void ChirpTextLexer::lexIdentifier(std::vector<ChirpTextToken>& out) {
+void ChirpTextLexer::LexIdentifier(std::vector<ChirpTextToken>& out) {
   const SourceLocation begin{
       .mFile = mFilename,
       .mLine = mLine,
       .mColumn = mColumn,
   };
   std::string text;
-  while (!eof()) {
-    if (const char c = peek(); std::isalnum(static_cast<unsigned char>(c)) || c == '_' || c == '.' || c == '-' || c == '$' || c == '/') {
-      text += advance();
+  while (!EndOfFile()) {
+    if (const char c = Peek(); std::isalnum(static_cast<unsigned char>(c)) || c == '_' || c == '.' || c == '-' || c == '$' || c == '/') {
+      text += Advance();
     } else {
       break;
     }
@@ -224,15 +225,15 @@ void ChirpTextLexer::lexIdentifier(std::vector<ChirpTextToken>& out) {
   });
 }
 
-std::vector<ChirpTextToken> ChirpTextLexer::tokenize(ChirpTextDiagnosticBag& diagnostics) {
+std::vector<ChirpTextToken> ChirpTextLexer::tokenize(ChirpDiagnosticBag& diagnostics) {
   std::vector<ChirpTextToken> out;
 
-  while (!eof()) {
-    skipHorizontalWhitespace();
-    if (eof())
+  while (!EndOfFile()) {
+    SkipHorizontalWhitespace();
+    if (EndOfFile())
       break;
 
-    const char c = peek();
+    const char c = Peek();
 
     if (c == '\n') {
       const SourceLocation begin{
@@ -240,7 +241,7 @@ std::vector<ChirpTextToken> ChirpTextLexer::tokenize(ChirpTextDiagnosticBag& dia
           .mLine = mLine,
           .mColumn = mColumn,
       };
-      advance();
+      Advance();
       out.push_back({
           .mKind = ChirpTextTokenKind::Newline,
           .mText = "",
@@ -259,20 +260,20 @@ std::vector<ChirpTextToken> ChirpTextLexer::tokenize(ChirpTextDiagnosticBag& dia
     }
 
     if (c == '#') {
-      lexComment(out);
+      LexComment(out);
       continue;
     }
     if (c == '"') {
       const auto before = out.size();
-      lexString(out, diagnostics);
+      LexString(out, diagnostics);
       if (out.size() == before) {
         break; // fatal lexical error; stop immediately
       }
       continue;
     }
-    if (std::isdigit(static_cast<unsigned char>(c)) || ((c == '-' || c == '+') && std::isdigit(static_cast<unsigned char>(peek(1))))) {
+    if (std::isdigit(static_cast<unsigned char>(c)) || ((c == '-' || c == '+') && std::isdigit(static_cast<unsigned char>(Peek(1))))) {
       const auto before = mPosition;
-      lexNumber(out);
+      LexNumber(out);
       if (mPosition == before) {
         break;
       }
@@ -308,10 +309,10 @@ std::vector<ChirpTextToken> ChirpTextLexer::tokenize(ChirpTextDiagnosticBag& dia
       break;
     default:
       if (std::isalpha(static_cast<unsigned char>(c)) || c == '_' || c == '$') {
-        lexIdentifier(out);
+        LexIdentifier(out);
         continue;
       }
-      diagnostics.error(
+      diagnostics.Error(
           {
               .mBegin = begin,
               .mEnd =
@@ -339,7 +340,7 @@ std::vector<ChirpTextToken> ChirpTextLexer::tokenize(ChirpTextDiagnosticBag& dia
       return out;
     }
 
-    advance();
+    Advance();
     out.push_back({
         .mKind = kind,
         .mText = std::string(1, c),
@@ -372,3 +373,4 @@ std::vector<ChirpTextToken> ChirpTextLexer::tokenize(ChirpTextDiagnosticBag& dia
   });
   return out;
 }
+} // namespace chirp::text

@@ -1,39 +1,33 @@
 #pragma once
-#include "libchirp-text/ChirpTextDiagnostic.hpp"
+#include "libchirp-common/ChirpDiagnostic.hpp"
 #include "libchirp-text/ChirpTextDocument.hpp"
 #include <filesystem>
 #include <functional>
 #include <memory>
 
-enum class IncludePathKind { Rooted, Absolute };
+namespace chirp::text {
+enum class ChirpTextIncludePathKind { Rooted, Absolute };
 
 struct ResolvedIncludePath {
-  IncludePathKind kind;
+  ChirpTextIncludePathKind kind;
   std::filesystem::path path;
 };
 
-using IncludeResolver =
-    std::function< bool(const std::filesystem::path& includingFile, const std::string& includePath,
-                        ResolvedIncludePath& resolved) >;
+using ChirpTextIncludeResolver = std::function<bool(const std::filesystem::path& includingFile, const std::string& includePath, ResolvedIncludePath& resolved)>;
 
 class ChirpTextDocumentLoader {
 public:
-  explicit ChirpTextDocumentLoader(const std::filesystem::path& projectRoot = {},
-                                   IncludeResolver resolver = {});
+  explicit ChirpTextDocumentLoader(const std::filesystem::path& projectRoot = {}, ChirpTextIncludeResolver resolver = {});
 
-  std::shared_ptr< ChirpTextDocument > load(const std::filesystem::path& path,
-                                            ChirpTextDiagnosticBag diagnostics) const;
+  [[nodiscard]] std::shared_ptr<ChirpTextDocument> Load(const std::filesystem::path& path, ChirpDiagnosticBag diagnostics) const;
 
-  bool resolveIncludes(ChirpTextDocument& document, const std::filesystem::path& sourcePath,
-                       ChirpTextDiagnosticBag diagnostics) const;
-
-  const std::filesystem::path& projectRoot() const { return mProjectRoot; }
+  bool ResolveIncludes(ChirpTextDocument& document, const std::filesystem::path& sourcePath, ChirpDiagnosticBag diagnostics) const;
+  [[nodiscard]] const std::filesystem::path& ProjectRoot() const { return mProjectRoot; }
 
 private:
-  bool resolveIncludePath(const std::filesystem::path& includingFile,
-                          const std::string& includePath, ResolvedIncludePath& resolved,
-                          ChirpTextDiagnosticBag diagnostics) const;
+  bool ResolveIncludePath(const std::filesystem::path& includingFile, const std::string& includePath, ResolvedIncludePath& resolved, ChirpDiagnosticBag diagnostics) const;
 
   std::filesystem::path mProjectRoot;
-  IncludeResolver mResolver;
+  ChirpTextIncludeResolver mResolver;
 };
+} // namespace chirp::text

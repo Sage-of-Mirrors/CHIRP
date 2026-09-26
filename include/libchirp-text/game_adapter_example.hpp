@@ -1,33 +1,32 @@
 #pragma once
-#include "chirp/ir/text/AST.hpp"
+#include "libchirp-text/ChirpTextDocument.hpp"
 #include <optional>
 #include <string>
 
 namespace example_game {
 
 struct Properties {
-  std::optional< std::int64_t > collisionLayer;
-  std::optional< bool > dynamic;
-  std::optional< double > mass;
+  std::optional<std::int64_t> collisionLayer;
+  std::optional<bool> dynamic;
+  std::optional<double> mass;
 };
 
-inline Properties readGameUserData(const chirp::ir::text::Document& document) {
+inline Properties ReadGameUserData(const chirp::text::ChirpTextDocument& document) {
   Properties out;
 
-  for (const auto& ns : document.userData) {
-    if (ns.namespaceName != "game")
+  for (const auto& ns : document.mUserData) {
+    if (ns.mNamespaceName != "game")
       continue;
 
-    for (const auto& field : ns.fields) {
-      if (field.name == "collision_layer" &&
-          std::holds_alternative< std::int64_t >(field.value.data))
-        out.collisionLayer = std::get< std::int64_t >(field.value.data);
+    for (const auto& field : ns.mFields) {
+      if (field.mName == "collision_layer" && std::holds_alternative<std::int64_t>(field.mValue.mData))
+        out.collisionLayer = std::get<std::int64_t>(field.mValue.mData);
 
-      else if (field.name == "dynamic" && std::holds_alternative< bool >(field.value.data))
-        out.dynamic = std::get< bool >(field.value.data);
+      else if (field.mName == "dynamic" && std::holds_alternative<bool>(field.mValue.mData))
+        out.dynamic = std::get<bool>(field.mValue.mData);
 
-      else if (field.name == "mass" && std::holds_alternative< double >(field.value.data))
-        out.mass = std::get< double >(field.value.data);
+      else if (field.mName == "mass" && std::holds_alternative<double>(field.mValue.mData))
+        out.mass = std::get<double>(field.mValue.mData);
     }
   }
 

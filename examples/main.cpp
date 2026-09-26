@@ -50,7 +50,7 @@ count 1
 %{ (0, 0, 0, 0), (0, 0, 0, 0), (0, 0), (255, 255, 255, 255) }%
 )";
 
-  ChirpTextDiagnosticBag diagnostics;
+  ChirpDiagnosticBag diagnostics;
   ChirpTextLexer lexer(text, "example.chirm");
   auto tokens = lexer.tokenize(diagnostics);
   if (diagnostics.hasErrors()) {

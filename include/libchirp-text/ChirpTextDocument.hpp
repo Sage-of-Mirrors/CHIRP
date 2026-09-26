@@ -7,6 +7,7 @@
 #include <variant>
 #include <vector>
 
+namespace chirp::text {
 struct ChirpTextDocument {
   struct Comment {
     std::string mText;
@@ -16,7 +17,7 @@ struct ChirpTextDocument {
   struct Include {
     std::string mPath;
     ChirpTextSourceSpan mSpan;
-    std::shared_ptr< ChirpTextDocument > mResolved;
+    std::shared_ptr<ChirpTextDocument> mResolved;
   };
 
   struct CountStatement {
@@ -31,34 +32,35 @@ struct ChirpTextDocument {
   };
 
   struct Row {
-    std::vector< ChirpTextValue > mFields;
+    std::vector<ChirpTextValue> mFields;
     ChirpTextSourceSpan mSpan;
   };
 
   struct Section {
     std::string mName;
-    std::vector< Comment > mComments;
-    std::vector< CountStatement > mCounts;
-    std::vector< PropertyStatement > mProperties;
-    std::vector< Row > mRows;
+    std::vector<Comment> mComments;
+    std::vector<CountStatement> mCounts;
+    std::vector<PropertyStatement> mProperties;
+    std::vector<Row> mRows;
     ChirpTextSourceSpan mSpan;
   };
 
   struct UserData {
     std::string mNamespaceName;
-    std::vector< PropertyStatement > mFields;
-    std::vector< UserData > mChildren;
+    std::vector<PropertyStatement> mFields;
+    std::vector<UserData> mChildren;
     ChirpTextSourceSpan mSpan;
   };
 
   std::string mTypeName;
   ChirpTextSourceSpan mSpan;
 
-  std::vector< Comment > mComments;
-  std::vector< Include > mIncludes;
-  std::vector< Section > mSections;
-  std::vector< UserData > mUserData;
+  std::vector<Comment> mComments;
+  std::vector<Include> mIncludes;
+  std::vector<Section> mSections;
+  std::vector<UserData> mUserData;
 
-  const Section* findSection(const std::string& name) const;
-  Section* findSection(const std::string& name);
+  const Section* FindSection(const std::string& name) const;
+  Section* FindSection(const std::string& name);
 };
+} // namespace chirp::text

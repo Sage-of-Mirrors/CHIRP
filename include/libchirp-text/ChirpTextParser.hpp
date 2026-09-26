@@ -1,39 +1,37 @@
 #pragma once
-#include "libchirp-text/ChirpTextDiagnostic.hpp"
+#include "libchirp-common/ChirpDiagnostic.hpp"
 #include "libchirp-text/ChirpTextDocument.hpp"
 #include "libchirp-text/ChirpTextToken.hpp"
 #include <vector>
 
+namespace chirp::text {
 class ChirpTextParser {
 public:
-  explicit ChirpTextParser(std::vector< ChirpTextToken > tokens);
+  explicit ChirpTextParser(std::vector<ChirpTextToken> tokens);
 
-  ChirpTextDocument parse(ChirpTextDiagnosticBag& diagnostics);
+  ChirpTextDocument Parse(ChirpDiagnosticBag& diagnostics);
 
 private:
-  const ChirpTextToken& peek(std::size_t offset = 0) const;
-  bool check(ChirpTextTokenKind kind) const;
-  bool match(ChirpTextTokenKind kind);
-  const ChirpTextToken& expect(ChirpTextTokenKind kind, ChirpTextDiagnosticBag& diagnostics,
-                               const char* message);
-  void fail(ChirpTextDiagnosticBag& diagnostics, const ChirpTextSourceSpan& span,
-            const char* message);
+  [[nodiscard]] const ChirpTextToken& Peek(std::size_t offset = 0) const;
+  [[nodiscard]] bool Check(ChirpTextTokenKind kind) const;
+  bool Match(ChirpTextTokenKind kind);
+  const ChirpTextToken& Expect(ChirpTextTokenKind kind, ChirpDiagnosticBag& diagnostics, const char* message);
+  void Fail(ChirpDiagnosticBag& diagnostics, const ChirpTextSourceSpan& span, const char* message);
 
-  void skipNewlines();
-  void parseTopLevel(ChirpTextDocument& document, ChirpTextDiagnosticBag& diagnostics);
-  void parseInclude(ChirpTextDocument& document, ChirpTextDiagnosticBag& diagnostics);
-  void parseUserData(ChirpTextDocument& document, ChirpTextDiagnosticBag& diagnostics);
-  ChirpTextDocument::UserData parseUserDataBlock(ChirpTextDiagnosticBag& diagnostics);
-  void parseSection(ChirpTextDocument& document, ChirpTextDiagnosticBag& diagnostics);
-  void parseSectionStatement(ChirpTextDocument::Section& section,
-                             ChirpTextDiagnosticBag& diagnostics);
+  void SkipNewlines();
+  void ParseTopLevel(ChirpTextDocument& document, ChirpDiagnosticBag& diagnostics);
+  void ParseInclude(ChirpTextDocument& document, ChirpDiagnosticBag& diagnostics);
+  void ParseUserData(ChirpTextDocument& document, ChirpDiagnosticBag& diagnostics);
+  [[nodiscard]] ChirpTextDocument::UserData ParseUserDataBlock(ChirpDiagnosticBag& diagnostics);
+  void ParseSection(ChirpTextDocument& document, ChirpDiagnosticBag& diagnostics);
+  void ParseSectionStatement(ChirpTextDocument::Section& section, ChirpDiagnosticBag& diagnostics);
 
-  ChirpTextValue parseValue(ChirpTextDiagnosticBag& diagnostics);
-  ChirpTextValue parseTuple(ChirpTextDiagnosticBag& diagnostics);
-  ChirpTextValue parseScalar(ChirpTextDiagnosticBag& diagnostics);
-  ChirpTextDocument::Row parseRow(ChirpTextDiagnosticBag& diagnostics);
-
-  std::vector< ChirpTextToken > mTokens;
+  [[nodiscard]] ChirpTextValue ParseValue(ChirpDiagnosticBag& diagnostics);
+  [[nodiscard]] ChirpTextValue ParseTuple(ChirpDiagnosticBag& diagnostics);
+  [[nodiscard]] ChirpTextValue ParseScalar(ChirpDiagnosticBag& diagnostics);
+  [[nodiscard]] ChirpTextDocument::Row ParseRow(ChirpDiagnosticBag& diagnostics);
+  std::vector<ChirpTextToken> mTokens;
   std::size_t mIndex = 0;
   bool mFailed = false;
 };
+} // namespace chirp::text
