@@ -45,20 +45,20 @@
       ]
     },
     {
-      "name": "libchirp-ir",
+      "name": "libchirp-text",
       "hidden": true,
       "cacheVariables": {
-        "CHIRP_BUILD_IR_LIB": true
+        "CHIRP_BUILD_TEXT_LIB": true
       }
     },
     {
-      "name": "libchirp-ir-debug",
-      "displayName": "libchirp-ir (debug)",
+      "name": "libchirp-text-debug",
+      "displayName": "libchirp-text (debug)",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "inherits": [
         "debug",
-        "libchirp-ir"
+        "libchirp-text"
       ]
     },
     {
@@ -83,7 +83,7 @@
       "displayName": "chirp (debug)",
       "inherits": [
         "libchirp-binary-debug",
-        "libchirp-ir-debug",
+        "libchirp-text-debug",
         "chirp-cli-debug"
       ]
     }

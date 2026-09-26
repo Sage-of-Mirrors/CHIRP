@@ -3,7 +3,8 @@ file(GLOB_RECURSE CHIRP_CLI_SRC
     include/*.hpp
 )
 
-add_executable(chirp ${CHIRP_CLI_SRC})
+add_executable(chirp-cli ${CHIRP_CLI_SRC})
 
-set_target_properties(chirp PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(chirp PRIVATE chirp::common chirp::binary chirp::ir)
+set_target_properties(chirp-cli PROPERTIES OUTPUT_NAME "chirp")
+target_link_libraries(chirp-cli PUBLIC chirp::common chirp::binary chirp::text)
+target_include_directories(chirp-cli PUBLIC include)
