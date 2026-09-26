@@ -16,7 +16,7 @@ private:
   [[nodiscard]] bool Check(ChirpTextTokenKind kind) const;
   bool Match(ChirpTextTokenKind kind);
   const ChirpTextToken& Expect(ChirpTextTokenKind kind, ChirpDiagnosticBag& diagnostics, const char* message);
-  void Fail(ChirpDiagnosticBag& diagnostics, const ChirpTextSourceSpan& span, const char* message);
+  void Fail(ChirpDiagnosticBag& diagnostics, const ChirpSourceSpan& span, const char* message);
 
   void SkipNewlines();
   void ParseTopLevel(ChirpTextDocument& document, ChirpDiagnosticBag& diagnostics);

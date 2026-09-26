@@ -1,5 +1,6 @@
 #include "libchirp-text/ChirpTextToken.hpp"
 
+namespace chirp::text {
 const char* ChirpTextTokenKindName(const ChirpTextTokenKind kind) {
   switch (kind) {
   case ChirpTextTokenKind::End:
@@ -35,3 +36,4 @@ const char* ChirpTextTokenKindName(const ChirpTextTokenKind kind) {
   }
   return "unknown";
 }
+} // namespace chirp::text

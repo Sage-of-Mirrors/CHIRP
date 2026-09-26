@@ -33,7 +33,7 @@ void ChirpTextLexer::SkipHorizontalWhitespace() {
 }
 
 void ChirpTextLexer::LexComment(std::vector<ChirpTextToken>& out) {
-  const SourceLocation begin{
+  const ChirpSourceLocation begin{
       .mFile = mFilename,
       .mLine = mLine,
       .mColumn = mColumn,
@@ -62,7 +62,7 @@ void ChirpTextLexer::LexComment(std::vector<ChirpTextToken>& out) {
 }
 
 void ChirpTextLexer::LexString(std::vector<ChirpTextToken>& out, ChirpDiagnosticBag& diagnostics) {
-  const SourceLocation begin{
+  const ChirpSourceLocation begin{
       .mFile = mFilename,
       .mLine = mLine,
       .mColumn = mColumn,
@@ -137,7 +137,7 @@ void ChirpTextLexer::LexString(std::vector<ChirpTextToken>& out, ChirpDiagnostic
 }
 
 void ChirpTextLexer::LexNumber(std::vector<ChirpTextToken>& out) {
-  const SourceLocation begin{
+  const ChirpSourceLocation begin{
       .mFile = mFilename,
       .mLine = mLine,
       .mColumn = mColumn,
@@ -195,7 +195,7 @@ void ChirpTextLexer::LexNumber(std::vector<ChirpTextToken>& out) {
 }
 
 void ChirpTextLexer::LexIdentifier(std::vector<ChirpTextToken>& out) {
-  const SourceLocation begin{
+  const ChirpSourceLocation begin{
       .mFile = mFilename,
       .mLine = mLine,
       .mColumn = mColumn,
@@ -236,7 +236,7 @@ std::vector<ChirpTextToken> ChirpTextLexer::tokenize(ChirpDiagnosticBag& diagnos
     const char c = Peek();
 
     if (c == '\n') {
-      const SourceLocation begin{
+      const ChirpSourceLocation begin{
           .mFile = mFilename,
           .mLine = mLine,
           .mColumn = mColumn,
@@ -280,7 +280,7 @@ std::vector<ChirpTextToken> ChirpTextLexer::tokenize(ChirpDiagnosticBag& diagnos
       continue;
     }
 
-    const SourceLocation begin{.mFile = mFilename, .mLine = mLine, .mColumn = mColumn};
+    const ChirpSourceLocation begin{.mFile = mFilename, .mLine = mLine, .mColumn = mColumn};
     ChirpTextTokenKind kind;
     switch (c) {
     case '@':
@@ -323,7 +323,7 @@ std::vector<ChirpTextToken> ChirpTextLexer::tokenize(ChirpDiagnosticBag& diagnos
                   },
           },
           std::string("unexpected character '") + c + "'");
-      const SourceLocation end{
+      const ChirpSourceLocation end{
           .mFile = mFilename,
           .mLine = mLine,
           .mColumn = mColumn,
@@ -357,7 +357,7 @@ std::vector<ChirpTextToken> ChirpTextLexer::tokenize(ChirpDiagnosticBag& diagnos
     });
   }
 
-  const SourceLocation end{
+  const ChirpSourceLocation end{
       .mFile = mFilename,
       .mLine = mLine,
       .mColumn = mColumn,

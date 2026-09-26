@@ -28,7 +28,7 @@ const ChirpTextToken& ChirpTextParser::Expect(const ChirpTextTokenKind kind, Chi
   return mTokens[mIndex++];
 }
 
-void ChirpTextParser::Fail(ChirpDiagnosticBag& diagnostics, const ChirpTextSourceSpan& span, const char* message) {
+void ChirpTextParser::Fail(ChirpDiagnosticBag& diagnostics, const ChirpSourceSpan& span, const char* message) {
   if (!mFailed) {
     diagnostics.Error(span, message);
     mFailed = true;

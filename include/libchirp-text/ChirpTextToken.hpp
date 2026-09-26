@@ -1,7 +1,7 @@
 #pragma once
-#include "ChirpTextSource.hpp"
+#include "libchirp-common/ChirpErrorSource.hpp"
 #include <string>
-
+namespace chirp::text {
 enum class ChirpTextTokenKind {
   End,
   Identifier,
@@ -17,13 +17,14 @@ enum class ChirpTextTokenKind {
   RBrace,
   Comma,
   Equals,
-  Newline
+  Newline,
 };
 
 struct ChirpTextToken {
   ChirpTextTokenKind mKind;
   std::string mText;
-  ChirpTextSourceSpan mSpan;
+  ChirpSourceSpan mSpan;
 };
 
 const char* ChirpTextTokenKindName(ChirpTextTokenKind kind);
+} // namespace chirp::text
