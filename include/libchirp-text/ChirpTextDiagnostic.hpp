@@ -3,24 +3,24 @@
 #include <string>
 #include <vector>
 
-enum class DiagnosticSeverity { Note, Warning, Error };
+enum class ChirpDiagnosticSeverity { Note, Warning, Error };
 
-struct Diagnostic {
-  DiagnosticSeverity mSeverity;
+struct ChirpDiagnostic {
+  ChirpDiagnosticSeverity mSeverity;
   ChirpTextSourceSpan mSpan;
-  std::string message;
+  std::string mMessage;
 };
 
 class ChirpTextDiagnosticBag {
 public:
-  void add(DiagnosticSeverity severity, ChirpTextSourceSpan span, std::string message);
+  void add(ChirpDiagnosticSeverity severity, ChirpTextSourceSpan span, std::string message);
   void error(ChirpTextSourceSpan span, std::string message);
   void warning(ChirpTextSourceSpan span, std::string message);
   void note(ChirpTextSourceSpan span, std::string message);
 
-  bool hasErrors() const;
-  const std::vector< Diagnostic >& all() const;
+  [[nodiscard]] bool hasErrors() const;
+  [[nodiscard]] const std::vector<ChirpDiagnostic>& all() const;
 
 private:
-  std::vector< Diagnostic > mDiagnostics;
+  std::vector<ChirpDiagnostic> mDiagnostics;
 };

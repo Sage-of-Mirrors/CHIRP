@@ -1,7 +1,8 @@
 #include "libchirp-text/ChirpTextSchema.hpp"
 
-void ChirpModelSchema::validate(const ChirpTextDocument& document,
-                                ChirpTextDiagnosticBag& diagnostics) const {
+#include <format>
+
+void ChirpTextModelSchema::validate(const ChirpTextDocument& document, ChirpTextDiagnosticBag& diagnostics) const {
   if (document.mTypeName != "chirp_model") {
     diagnostics.error(document.mSpan, "expected document type 'chirp_model'");
     return;
@@ -9,7 +10,7 @@ void ChirpModelSchema::validate(const ChirpTextDocument& document,
 
   for (const auto& section : document.mSections) {
     if (section.mCounts.empty()) {
-      diagnostics.warning(section.mSpan, "section has no count declaration");
+      diagnostics.warning(section.mSpan, std::format("section '{}' has no count declaration", section.mName));
       continue;
     }
 
@@ -19,22 +20,22 @@ void ChirpModelSchema::validate(const ChirpTextDocument& document,
       continue;
     }
 
-    if (static_cast< std::size_t >(expected) != section.mRows.size()) {
+    if (static_cast<std::size_t>(expected) != section.mRows.size()) {
       diagnostics.error(section.mSpan, "declared count does not match number of rows");
     }
   }
 
   if (const auto* vertices = document.findSection("vertices")) {
-    for (const auto& row : vertices->mRows) {
-      if (row.mFields.size() != 4)
-        diagnostics.error(row.mSpan, "vertex rows require four fields");
+    for (const auto& [fields, span] : vertices->mRows) {
+      if (fields.size() != 4)
+        diagnostics.error(span, "vertex rows require four fields");
     }
   }
 
   if (const auto* surfaces = document.findSection("surfaces")) {
-    for (const auto& row : surfaces->mRows) {
-      if (row.mFields.size() != 2)
-        diagnostics.error(row.mSpan, "surface rows require two fields");
+    for (const auto& [fields, span] : surfaces->mRows) {
+      if (fields.size() != 2)
+        diagnostics.error(span, "surface rows require two fields");
     }
   }
 }

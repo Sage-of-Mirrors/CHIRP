@@ -56,7 +56,7 @@ count 1
   if (diagnostics.hasErrors()) {
     for (const auto& d : diagnostics.all()) {
       std::cerr << d.mSpan.mBegin.mFile << ':' << d.mSpan.mBegin.mLine << ':'
-                << d.mSpan.mBegin.mColumn << ": " << d.message << '\n';
+                << d.mSpan.mBegin.mColumn << ": " << d.mMessage << '\n';
     }
     return 1;
   }
@@ -64,12 +64,12 @@ count 1
   ChirpTextParser parser(std::move(tokens));
   ChirpTextDocument document = parser.parse(diagnostics);
 
-  ChirpModelSchema schema;
+  ChirpTextModelSchema schema;
   schema.validate(document, diagnostics);
 
   for (const auto& d : diagnostics.all()) {
     std::cerr << d.mSpan.mBegin.mFile << ':' << d.mSpan.mBegin.mLine << ':'
-              << d.mSpan.mBegin.mColumn << ": " << d.message << '\n';
+              << d.mSpan.mBegin.mColumn << ": " << d.mMessage << '\n';
   }
 
   for (const auto& ns : document.mUserData) {

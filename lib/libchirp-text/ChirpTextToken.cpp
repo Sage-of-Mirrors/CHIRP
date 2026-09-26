@@ -1,6 +1,6 @@
 #include "libchirp-text/ChirpTextToken.hpp"
 
-const char* ChirpTextTokenKindName(ChirpTextTokenKind kind) {
+const char* ChirpTextTokenKindName(const ChirpTextTokenKind kind) {
   switch (kind) {
   case ChirpTextTokenKind::End:
     return "end of file";

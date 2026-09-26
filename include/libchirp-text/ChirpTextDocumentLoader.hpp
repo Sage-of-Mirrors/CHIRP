@@ -18,7 +18,7 @@ using IncludeResolver =
 
 class ChirpTextDocumentLoader {
 public:
-  explicit ChirpTextDocumentLoader(std::filesystem::path projectRoot = {},
+  explicit ChirpTextDocumentLoader(const std::filesystem::path& projectRoot = {},
                                    IncludeResolver resolver = {});
 
   std::shared_ptr< ChirpTextDocument > load(const std::filesystem::path& path,

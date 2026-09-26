@@ -1,27 +1,17 @@
 #include "libchirp-text/ChirpTextDiagnostic.hpp"
 
-void ChirpTextDiagnosticBag::add(DiagnosticSeverity severity, ChirpTextSourceSpan span,
-                                 std::string message) {
-  mDiagnostics.push_back({severity, std::move(span), std::move(message)});
-}
+#include <algorithm>
 
-void ChirpTextDiagnosticBag::error(ChirpTextSourceSpan span, std::string message) {
-  add(DiagnosticSeverity::Error, std::move(span), std::move(message));
-}
+void ChirpTextDiagnosticBag::add(const ChirpDiagnosticSeverity severity, ChirpTextSourceSpan span, std::string message) { mDiagnostics.emplace_back(severity, std::move(span), std::move(message)); }
 
-void ChirpTextDiagnosticBag::warning(ChirpTextSourceSpan span, std::string message) {
-  add(DiagnosticSeverity::Warning, std::move(span), std::move(message));
-}
+void ChirpTextDiagnosticBag::error(ChirpTextSourceSpan span, std::string message) { add(ChirpDiagnosticSeverity::Error, std::move(span), std::move(message)); }
 
-void ChirpTextDiagnosticBag::note(ChirpTextSourceSpan span, std::string message) {
-  add(DiagnosticSeverity::Note, std::move(span), std::move(message));
-}
+void ChirpTextDiagnosticBag::warning(ChirpTextSourceSpan span, std::string message) { add(ChirpDiagnosticSeverity::Warning, std::move(span), std::move(message)); }
+
+void ChirpTextDiagnosticBag::note(ChirpTextSourceSpan span, std::string message) { add(ChirpDiagnosticSeverity::Note, std::move(span), std::move(message)); }
 
 bool ChirpTextDiagnosticBag::hasErrors() const {
-  for (const auto& d : mDiagnostics)
-    if (d.mSeverity == DiagnosticSeverity::Error)
-      return true;
-  return false;
+  return std::ranges::any_of(mDiagnostics, [](const auto& d) { return d.mSeverity == ChirpDiagnosticSeverity::Error; });
 }
 
-const std::vector< Diagnostic >& ChirpTextDiagnosticBag::all() const { return mDiagnostics; }
+const std::vector<ChirpDiagnostic>& ChirpTextDiagnosticBag::all() const { return mDiagnostics; }
