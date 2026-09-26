@@ -1,0 +1,25 @@
+\
+chirp_model
+
+@include("$/materials/example_materials.chirm")
+
+@game
+{
+    collision_layer = 4
+    dynamic = true
+    mass = 12.5
+    tags = ("enemy", "flying")
+}
+
+%vertices%
+count 4
+#   Position,        Normal,   UV,        Color
+%{ (0, 0, 0, 0), (0, 0, 0, 0), (0, 0), (255, 255, 255, 255) }%
+%{ (0, 0, 0, 0), (0, 0, 0, 0), (0, 0), (255, 255, 255, 255) }%
+%{ (0, 0, 0, 0), (0, 0, 0, 0), (0, 0), (255, 255, 255, 255) }%
+%{ (0, 0, 0, 0), (0, 0, 0, 0), (0, 0), (255, 255, 255, 255) }%
+
+%surfaces%
+count 1
+# VertIdx, MaterialName
+%{ 0, SimpleBlend }%

@@ -5,9 +5,9 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-option(CHIRP_BUILD_CLI "Build chirp-cli")
-option(CHIRP_BUILD_BINARY_LIB "Build libchirp-binary")
-option(CHIRP_BUILD_TEXT_LIB "Build libchirp-text")
+option(CHIRP_BUILD_CLI "Build chirp-cli" ON)
+option(CHIRP_BUILD_BINARY_LIB "Build libchirp-binary" ON)
+option(CHIRP_BUILD_TEXT_LIB "Build libchirp-text" ON)
 
 add_subdirectory(extern)
 

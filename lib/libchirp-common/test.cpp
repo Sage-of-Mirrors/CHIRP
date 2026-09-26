@@ -1,4 +1,4 @@
-#include "libchirp-common/StdInc.h"
+#include "libchirp-common/StdInc.hpp"
 
 namespace chirp::common
 {

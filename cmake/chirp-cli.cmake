@@ -1,6 +1,7 @@
 file(GLOB_RECURSE CHIRP_CLI_SRC
     src/*.cpp
     include/*.hpp
+    include/*.h
 )
 
 add_executable(chirp-cli ${CHIRP_CLI_SRC})
