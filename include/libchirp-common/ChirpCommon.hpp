@@ -16,6 +16,7 @@ using s32 = int32_t;
 using s64 = int64_t;
 using f32 = float;
 
+namespace chirp {
 /* Type-sensitive byte swappers */
 template <typename T>
 constexpr T bswap16(T val) noexcept {
@@ -128,3 +129,45 @@ constexpr double SBig(double val) noexcept { return val; }
 #define SBIG(q) (q)
 #endif
 #endif
+
+class FourCC {
+protected:
+  union {
+    char fcc[4];
+    uint32_t num = 0;
+  };
+
+public:
+  // Sentinel FourCC
+  constexpr FourCC() noexcept = default;
+  constexpr FourCC(const FourCC& other) noexcept = default;
+  constexpr FourCC(FourCC&& other) noexcept = default;
+  constexpr FourCC(const char* name) noexcept
+  : fcc{name[0], name[1], name[2], name[3]} {}
+  constexpr FourCC(uint32_t n) noexcept
+  : num(n) {}
+
+  constexpr FourCC& operator=(const FourCC&) noexcept = default;
+  constexpr FourCC& operator=(FourCC&&) noexcept = default;
+
+  constexpr bool operator==(const FourCC& other) const noexcept { return num == other.num; }
+  constexpr bool operator!=(const FourCC& other) const noexcept { return !operator==(other); }
+  constexpr bool operator<(const FourCC& other) const noexcept { return num < other.num; }
+  constexpr bool operator==(const char* other) const noexcept { return other[0] == fcc[0] && other[1] == fcc[1] && other[2] == fcc[2] && other[3] == fcc[3]; }
+  constexpr bool operator!=(const char* other) const noexcept { return !operator==(other); }
+  constexpr bool operator==(int32_t other) const noexcept { return num == static_cast<uint32_t>(other); }
+  constexpr bool operator!=(int32_t other) const noexcept { return !operator==(other); }
+  constexpr bool operator<(int32_t other) const noexcept { return num < other; }
+  constexpr bool operator==(uint32_t other) const noexcept { return num == other; }
+  constexpr bool operator!=(uint32_t other) const noexcept { return !operator==(other); }
+  constexpr bool operator<(uint32_t other) const noexcept { return num < other; }
+
+  std::string toString() const { return std::string(std::begin(fcc), std::end(fcc)); }
+  constexpr std::string_view toStringView() const { return std::string_view(fcc, std::size(fcc)); }
+  constexpr uint32_t toUint32() const noexcept { return num; }
+  constexpr const char* getChars() const noexcept { return fcc; }
+  constexpr char* getChars() noexcept { return fcc; }
+  constexpr bool IsValid() const noexcept { return num != 0; }
+};
+#define FOURCC(chars) FourCC(SBIG(chars))
+} // namespace chirp

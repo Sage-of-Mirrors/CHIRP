@@ -11,4 +11,5 @@ add_library(chirp::text ALIAS libchirp_text)
 
 set_target_properties(libchirp_text PROPERTIES LINKER_LANGUAGE CXX)
 target_link_libraries(libchirp_text PUBLIC chirp::common)
-target_include_directories(libchirp_text PUBLIC include)
+target_include_directories(libchirp_text PUBLIC athena-core include)
+target_include_directories(libchirp_binary PUBLIC include extern/athena/include)

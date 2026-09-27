@@ -56,7 +56,7 @@ bool ChirpBinary::Import(athena::io::IStreamReader& inStream) {
 
     u64 sectionStart = inStream.position();
 
-    auto sectionFourcc = static_cast<ChirpBinaryFourCC>(inStream.readUint32());
+    auto sectionFourcc = static_cast<ChirpBinaryFourCC>(inStream.readUint32Big());
     u32 sectionSize = inStream.readUint32();
     u32 sectionElementCount = inStream.readUint32();
 
