@@ -1,4 +1,5 @@
 #pragma once
+#include "libchirp-common/ChirpCommon.hpp"
 #include "libchirp-common/ChirpErrorSource.hpp"
 #include <cstdint>
 #include <string>
@@ -8,7 +9,7 @@
 namespace chirp::text {
 struct ChirpTextValue {
   using ChirpTextTuple = std::vector<ChirpTextValue>;
-  using ChirpTextData = std::variant<std::nullptr_t, bool, std::int64_t, double, std::string, ChirpTextTuple>;
+  using ChirpTextData = std::variant<std::nullptr_t, bool, s64, double, std::string, ChirpTextTuple>;
 
   ChirpTextData mData;
   ChirpSourceSpan mSpan;
