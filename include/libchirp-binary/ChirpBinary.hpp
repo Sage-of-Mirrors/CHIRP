@@ -12,7 +12,8 @@ class IStreamWriter;
 } // namespace athena::io
 
 namespace chirp::binary {
-using ChirpBinarySectionMap = std::unordered_map<ChirpSectionType, std::unique_ptr<ChirpBinarySection>>;
+using ChirpBinarySectionMap =
+    std::unordered_map< ChirpSectionType, std::unique_ptr< ChirpBinarySection > >;
 
 class ChirpBinaryImportOptions;
 class ChirpBinaryExportOptions;
@@ -53,7 +54,8 @@ public:
   // Attempts to retrieve a section of the given type from this ChirpBinary instance.
   // Returns nullptr if an invalid type is given or if the instance does not contain
   // a section of that type.
-  template <typename T, typename = typename std::enable_if<std::is_base_of_v<ChirpBinarySection, T>>>
+  template < typename T,
+             typename = typename std::enable_if< std::is_base_of_v< ChirpBinarySection, T > > >
   T* GetSection(ChirpSectionType type) {
     if (type == ChirpSectionType::Unknown) {
       std::cerr << "Attempted to get a section of an unknown type from "
@@ -69,7 +71,7 @@ public:
     }
 
     if (auto itr = m_sections.find(type); itr != m_sections.end()) {
-      return static_cast<T*>(itr->second.get());
+      return static_cast< T* >(itr->second.get());
     }
 
     std::cerr << "Attempted to get a section from ChirpBinary that it "
@@ -81,7 +83,8 @@ public:
   // Attempts to create a section of the given type for this ChirpBinary instance.
   // Returns nullptr if the creation fails due to an invalid type being passed,
   // or if this instance already contains a section of the given type.
-  template <typename T, typename = typename std::enable_if<std::is_base_of_v<ChirpBinarySection, T>>>
+  template < typename T,
+             typename = typename std::enable_if< std::is_base_of_v< ChirpBinarySection, T > > >
   T* CreateSection(ChirpSectionType type) {
     if (type == ChirpSectionType::Unknown) {
       std::cerr << "Attempted to create a section of an unknown type for "
@@ -103,8 +106,8 @@ public:
       return nullptr;
     }
 
-    m_sections[type] = std::make_unique<T>();
-    return static_cast<T*>(m_sections[type].get());
+    m_sections[type] = std::make_unique< T >();
+    return static_cast< T* >(m_sections[type].get());
   }
 
 private:

@@ -29,9 +29,9 @@ class ChirpBinarySection {
 public:
   ChirpBinarySection() = default;
   ChirpBinarySection(ChirpSectionType type, u32 size, u32 elementCount)
-  : m_type(type)
-  , m_size(size)
-  , m_elementCount(elementCount) {}
+  : m_type(type), m_size(size), m_elementCount(elementCount) {}
+  ChirpBinarySection(ChirpSectionType type, u64 offset, u32 size, u32 elementCount)
+  : m_type(type), m_offset(offset), m_size(size), m_elementCount(elementCount) {}
 
   virtual bool Import(athena::io::IStreamReader& inStream) = 0;
   virtual bool Export(athena::io::IStreamWriter& outStream) = 0;
@@ -42,6 +42,8 @@ public:
 
 protected:
   ChirpSectionType m_type{ChirpSectionType::Unknown};
+
+  u64 m_offset{0};
   u32 m_size{0};
   u32 m_elementCount{0};
 };

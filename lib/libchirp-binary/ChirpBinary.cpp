@@ -10,8 +10,8 @@
 namespace chirp::binary {
 namespace {
 enum class ChirpBinaryFourCC : u32 {
-  ChirpBinaryFile = SBIG(0x43485242), // 'CHRB'
-  VertexAttributes = SBIG(0x43564154) // 'CVAT'
+  ChirpBinaryFile = 0x43485242, // 'CHRB'
+  VertexAttributes = 0x43564154 // 'CVAT'
 };
 } // namespace
 
@@ -28,7 +28,7 @@ bool ChirpBinary::Export(const std::filesystem::path& outFilepath) {
 }
 
 bool ChirpBinary::Import(athena::io::IStreamReader& inStream) {
-  auto headerFourcc = static_cast<ChirpBinaryFourCC>(inStream.readUint32Big());
+  auto headerFourcc = static_cast< ChirpBinaryFourCC >(inStream.readUint32Big());
   if (headerFourcc != ChirpBinaryFourCC::ChirpBinaryFile) {
     std::cerr << "Import stream for ChirpBinary was not a valid *.chirb file;"
                  " the file magic was incorrect."
@@ -56,17 +56,18 @@ bool ChirpBinary::Import(athena::io::IStreamReader& inStream) {
 
     u64 sectionStart = inStream.position();
 
-    auto sectionFourcc = static_cast<ChirpBinaryFourCC>(inStream.readUint32Big());
+    auto sectionFourcc = static_cast< ChirpBinaryFourCC >(inStream.readUint32Big());
     u32 sectionSize = inStream.readUint32();
     u32 sectionElementCount = inStream.readUint32();
 
-    std::unique_ptr<ChirpBinarySection> newSection;
+    std::unique_ptr< ChirpBinarySection > newSection;
     ChirpSectionType newSectionType;
 
     switch (sectionFourcc) {
     case ChirpBinaryFourCC::VertexAttributes:
       newSectionType = ChirpSectionType::Vertex;
-      newSection = std::make_unique<ChirpBinaryVat>(sectionSize, sectionElementCount);
+      newSection =
+          std::make_unique< ChirpBinaryVat >(sectionStart, sectionSize, sectionElementCount);
       break;
     default:
       std::cerr << "Encountered unknown ChirpSectionType while "
@@ -78,7 +79,7 @@ bool ChirpBinary::Import(athena::io::IStreamReader& inStream) {
     newSection->Import(inStream);
     m_sections[newSectionType] = std::move(newSection);
 
-    inStream.seek(static_cast<s64>(sectionStart + sectionSize), athena::SeekOrigin::Begin);
+    inStream.seek(static_cast< s64 >(sectionStart + sectionSize), athena::SeekOrigin::Begin);
   }
 
   return true;
