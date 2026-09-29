@@ -2,12 +2,13 @@
 
 #include <libchirp-common/ChirpCommon.hpp>
 
-#include "ChirpBinarySection.hpp"
+#include "libchirp-binary/section/ChirpBinarySection.hpp"
 
-#include <libchirp-common/gx/GxEnum.hpp>
+#include <libchirp-common/gx/GXEnum.hpp>
 #include <libchirp-common/math/ChirpVector.hpp>
 
 #include <unordered_map>
+#include <vector>
 
 namespace chirp::binary {
 class ChirpVertexAttribute {
@@ -61,6 +62,10 @@ public:
                                               const std::vector< math::ChirpVector4 >& data,
                                               gx::VtxComponentSize size, gx::VtxComponentType type,
                                               u8 exponent = 0);
+
+  static std::unique_ptr< ChirpBinarySection > CreateVATSection(u32 size, u32 elementCount);
+  static std::unique_ptr< ChirpBinarySection > CreateVATSectionWithOffset(u64 offset, u32 size,
+                                                                          u32 elementCount);
 
 private:
   void ReadVertexAttributeData(athena::io::IStreamReader& inStream, u32 count,

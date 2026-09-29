@@ -27,6 +27,7 @@ enum class ChirpSectionType : u8 {
 
 class ChirpBinarySection {
 public:
+  virtual ~ChirpBinarySection() = default;
   ChirpBinarySection() = default;
   ChirpBinarySection(ChirpSectionType type, u32 size, u32 elementCount)
   : m_type(type), m_size(size), m_elementCount(elementCount) {}

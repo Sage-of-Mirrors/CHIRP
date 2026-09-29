@@ -7,22 +7,36 @@ ChirpBinarySectionManager& ChirpBinarySectionManager::Instance() {
   return instance;
 }
 
-bool ChirpBinarySectionManager::RegisterSection(const FourCC& typeId, FSectionFactory factory) {
+bool ChirpBinarySectionManager::RegisterSection(const FourCC& typeId, FSectionFactory factory,
+                                                FSectionWithOffsetFactory offsetFactory) {
   if (mSectionFactories.contains(typeId)) {
     std::cerr << std::format("Factory already registered for {}", typeId.toString()) << std::endl;
     return false;
   }
 
-  mSectionFactories[typeId] = std::move(factory);
+  mSectionFactories[typeId] = {std::move(factory), std::move(offsetFactory)};
   return true;
 }
 
-std::unique_ptr<ChirpBinarySection> ChirpBinarySectionManager::NewSection(const FourCC& typeId, const u32 size, const u32 elementCount) {
+std::unique_ptr< ChirpBinarySection >
+ChirpBinarySectionManager::NewSection(const FourCC& typeId, const u32 size,
+                                      const u32 elementCount) {
   if (!mSectionFactories.contains(typeId)) {
     std::cerr << std::format("Factory not registered for {}", typeId.toString()) << std::endl;
     return nullptr;
   }
 
-  return mSectionFactories[typeId](size, elementCount);
+  return mSectionFactories[typeId].first(size, elementCount);
+}
+
+std::unique_ptr< ChirpBinarySection >
+ChirpBinarySectionManager::NewSectionWithOffset(const FourCC& typeId, const u64 offset,
+                                                const u32 size, const u32 elementCount) {
+  if (!mSectionFactories.contains(typeId)) {
+    std::cerr << std::format("Factory not registered for {}", typeId.toString()) << std::endl;
+    return nullptr;
+  }
+
+  return mSectionFactories[typeId].second(offset, size, elementCount);
 }
 } // namespace chirp::binary

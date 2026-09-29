@@ -8,7 +8,11 @@ namespace chirp::binary {
 class ChirpBinarySection;
 class ChirpBinarySectionManager {
 public:
-  using FSectionFactory = std::function<std::unique_ptr<ChirpBinarySection>(u32 size, u32 elementCount)>;
+  using FSectionFactory =
+      std::function< std::unique_ptr< ChirpBinarySection >(u32 size, u32 elementCount) >;
+  using FSectionWithOffsetFactory = std::function< std::unique_ptr< ChirpBinarySection >(
+      u64 offset, u32 size, u32 elementCount) >;
+
   ChirpBinarySectionManager(const ChirpBinarySectionManager&) = delete;
   ChirpBinarySectionManager& operator=(const ChirpBinarySectionManager&) = delete;
   ChirpBinarySectionManager(const ChirpBinarySectionManager&&) = delete;
@@ -16,13 +20,18 @@ public:
 
   static ChirpBinarySectionManager& Instance();
 
-  bool RegisterSection(const FourCC& typeId, FSectionFactory factory);
+  bool RegisterSection(const FourCC& typeId, FSectionFactory factory,
+                       FSectionWithOffsetFactory offsetFactory);
 
-  std::unique_ptr<ChirpBinarySection> NewSection(const FourCC& typeId, u32 size, u32 elementCount);
+  std::unique_ptr< ChirpBinarySection > NewSection(const FourCC& typeId, u32 size,
+                                                   u32 elementCount);
+
+  std::unique_ptr< ChirpBinarySection > NewSectionWithOffset(const FourCC& typeId, u64 offset,
+                                                             u32 size, u32 elementCount);
 
 private:
   ChirpBinarySectionManager() = default;
 
-  std::map<FourCC, FSectionFactory> mSectionFactories;
+  std::map< FourCC, std::pair< FSectionFactory, FSectionWithOffsetFactory > > mSectionFactories;
 };
 } // namespace chirp::binary

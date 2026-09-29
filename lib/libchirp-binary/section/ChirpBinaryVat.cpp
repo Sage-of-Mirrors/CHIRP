@@ -2,9 +2,9 @@
 
 #include <athena/IStreamReader.hpp>
 #include <athena/IStreamWriter.hpp>
+#include <cmath>
 
-using namespace chirp;
-
+namespace chirp::binary {
 namespace {
 u32 GetComponentCount(gx::VtxAttribute attr, gx::VtxComponentSize compSize) {
   if (attr == gx::VtxAttribute::Position) {
@@ -85,15 +85,15 @@ f32 ReadVertexAttributeColorComponent(athena::io::IStreamReader& inStream,
 }
 } // namespace
 
-binary::ChirpBinaryVat::ChirpBinaryVat() : ChirpBinarySection() {}
+ChirpBinaryVat::ChirpBinaryVat() : ChirpBinarySection() {}
 
-binary::ChirpBinaryVat::ChirpBinaryVat(u32 size, u32 elementCount)
+ChirpBinaryVat::ChirpBinaryVat(u32 size, u32 elementCount)
 : ChirpBinarySection(ChirpSectionType::Vertex, size, elementCount) {}
 
-binary::ChirpBinaryVat::ChirpBinaryVat(u64 offset, u32 size, u32 elementCount)
+ChirpBinaryVat::ChirpBinaryVat(u64 offset, u32 size, u32 elementCount)
 : ChirpBinarySection(ChirpSectionType::Vertex, offset, size, elementCount) {}
 
-bool binary::ChirpBinaryVat::Import(athena::io::IStreamReader& inStream) {
+bool ChirpBinaryVat::Import(athena::io::IStreamReader& inStream) {
   u32 dataOffset = inStream.readUint32();
 
   for (u32 i = 0; i < m_elementCount; i++) {
@@ -125,10 +125,10 @@ bool binary::ChirpBinaryVat::Import(athena::io::IStreamReader& inStream) {
   return true;
 }
 
-bool binary::ChirpBinaryVat::Export(athena::io::IStreamWriter& outStream) { return true; }
+bool ChirpBinaryVat::Export(athena::io::IStreamWriter& outStream) { return true; }
 
-void binary::ChirpBinaryVat::ReadVertexAttributeData(athena::io::IStreamReader& inStream, u32 count,
-                                                     ChirpVertexAttribute* attribute) {
+void ChirpBinaryVat::ReadVertexAttributeData(athena::io::IStreamReader& inStream, u32 count,
+                                             ChirpVertexAttribute* attribute) {
   if (!count || !attribute) {
     return;
   }
@@ -157,10 +157,10 @@ void binary::ChirpBinaryVat::ReadVertexAttributeData(athena::io::IStreamReader& 
   }
 }
 
-void binary::ChirpBinaryVat::WriteVertexAttributeData(athena::io::IStreamWriter& outStream,
-                                                      u32 count, ChirpVertexAttribute* attribute) {}
+void ChirpBinaryVat::WriteVertexAttributeData(athena::io::IStreamWriter& outStream, u32 count,
+                                              ChirpVertexAttribute* attribute) {}
 
-binary::ChirpVertexAttribute* binary::ChirpBinaryVat::GetVertexAttribute(gx::VtxAttribute attr) {
+ChirpVertexAttribute* ChirpBinaryVat::GetVertexAttribute(gx::VtxAttribute attr) {
   if (attr >= gx::VtxAttribute::VtxAttributeMax) {
     std::cerr << "Attempted to get an invalid attribute from ChirpBinaryVat." << std::endl;
     return nullptr;
@@ -174,9 +174,10 @@ binary::ChirpVertexAttribute* binary::ChirpBinaryVat::GetVertexAttribute(gx::Vtx
   return nullptr;
 }
 
-binary::ChirpVertexAttribute*
-binary::ChirpBinaryVat::CreateVertexAttribute(gx::VtxAttribute attr, gx::VtxComponentSize size,
-                                              gx::VtxComponentType type, u8 exponent) {
+ChirpVertexAttribute* ChirpBinaryVat::CreateVertexAttribute(gx::VtxAttribute attr,
+                                                            gx::VtxComponentSize size,
+                                                            gx::VtxComponentType type,
+                                                            u8 exponent) {
   if (attr >= gx::VtxAttribute::VtxAttributeMax) {
     std::cerr << "Attempted to create an invalid attribute in ChirpBinaryVat." << std::endl;
     return nullptr;
@@ -192,7 +193,7 @@ binary::ChirpBinaryVat::CreateVertexAttribute(gx::VtxAttribute attr, gx::VtxComp
   return m_attributes[attr].get();
 }
 
-binary::ChirpVertexAttribute* binary::ChirpBinaryVat::CreateVertexAttribute(
+ChirpVertexAttribute* ChirpBinaryVat::CreateVertexAttribute(
     gx::VtxAttribute attr, const std::vector< math::ChirpVector4 >& data, gx::VtxComponentSize size,
     gx::VtxComponentType type, u8 exponent) {
   if (attr >= gx::VtxAttribute::VtxAttributeMax) {
@@ -209,3 +210,14 @@ binary::ChirpVertexAttribute* binary::ChirpBinaryVat::CreateVertexAttribute(
   m_attributes[attr] = std::make_unique< ChirpVertexAttribute >(attr, data, size, type, exponent);
   return m_attributes[attr].get();
 }
+
+std::unique_ptr< ChirpBinarySection > ChirpBinaryVat::CreateVATSection(const u32 size,
+                                                                       const u32 elementCount) {
+  return std::make_unique< ChirpBinaryVat >(ChirpBinaryVat(size, elementCount));
+}
+std::unique_ptr< ChirpBinarySection >
+ChirpBinaryVat::CreateVATSectionWithOffset(const u64 offset, const u32 size,
+                                           const u32 elementCount) {
+  return std::make_unique< ChirpBinaryVat >(ChirpBinaryVat(offset, size, elementCount));
+}
+} // namespace chirp::binary
