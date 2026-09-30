@@ -1,6 +1,6 @@
 #include "libchirp-binary/ChirpBinary.hpp"
 
-#include "libchirp-binary/section/ChirpBinaryVat.hpp"
+#include "libchirp-binary/ChirpBinarySectionManager.hpp"
 
 #include <athena/FileReader.hpp>
 #include <athena/FileWriter.hpp>
@@ -8,13 +8,6 @@
 #include <athena/IStreamWriter.hpp>
 
 namespace chirp::binary {
-namespace {
-enum class ChirpBinaryFourCC : u32 {
-  ChirpBinaryFile = 0x43485242, // 'CHRB'
-  VertexAttributes = 0x43564154 // 'CVAT'
-};
-} // namespace
-
 bool ChirpBinary::Import(const std::filesystem::path& inFilepath) {
   athena::io::FileReader inStream(inFilepath.generic_string());
   inStream.setEndian(athena::Endian::Little);
@@ -28,8 +21,8 @@ bool ChirpBinary::Export(const std::filesystem::path& outFilepath) {
 }
 
 bool ChirpBinary::Import(athena::io::IStreamReader& inStream) {
-  auto headerFourcc = static_cast< ChirpBinaryFourCC >(inStream.readUint32Big());
-  if (headerFourcc != ChirpBinaryFourCC::ChirpBinaryFile) {
+  FourCC headerFourcc = inStream.readUint32();
+  if (headerFourcc != "CHRB") {
     std::cerr << "Import stream for ChirpBinary was not a valid *.chirb file;"
                  " the file magic was incorrect."
               << std::endl;
@@ -56,28 +49,20 @@ bool ChirpBinary::Import(athena::io::IStreamReader& inStream) {
 
     u64 sectionStart = inStream.position();
 
-    auto sectionFourcc = static_cast< ChirpBinaryFourCC >(inStream.readUint32Big());
+    FourCC sectionFourcc = inStream.readUint32();
     u32 sectionSize = inStream.readUint32();
     u32 sectionElementCount = inStream.readUint32();
 
-    std::unique_ptr< ChirpBinarySection > newSection;
-    ChirpSectionType newSectionType;
+    std::unique_ptr< ChirpBinarySection > newSection =
+        ChirpBinarySectionManager::Instance().NewSectionWithOffset(
+            sectionFourcc, sectionStart, sectionSize, sectionElementCount);
 
-    switch (sectionFourcc) {
-    case ChirpBinaryFourCC::VertexAttributes:
-      newSectionType = ChirpSectionType::Vertex;
-      newSection =
-          std::make_unique< ChirpBinaryVat >(sectionStart, sectionSize, sectionElementCount);
-      break;
-    default:
-      std::cerr << "Encountered unknown ChirpSectionType while "
-                   "importing from stream. Aborting import."
-                << std::endl;
+    if (!newSection) {
       return false;
     }
 
     newSection->Import(inStream);
-    m_sections[newSectionType] = std::move(newSection);
+    m_sections[newSection->GetType()] = std::move(newSection);
 
     inStream.seek(static_cast< s64 >(sectionStart + sectionSize), athena::SeekOrigin::Begin);
   }

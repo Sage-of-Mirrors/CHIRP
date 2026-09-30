@@ -1,5 +1,5 @@
-#include "libchirp-binary/ChirpBinarySectionManager.hpp"
-#include "libchirp-binary/section/ChirpBinaryVat.hpp"
+#include <libchirp-binary/libchirp-binary.hpp>
+#include <libchirp-binary/ChirpBinary.hpp>
 
 #include <filesystem>
 #include <iostream>
@@ -14,9 +14,11 @@ void PrintTitle() {
 
 int main(int argc, char* argv[]) {
   PrintTitle();
-  chirp::binary::ChirpBinarySectionManager::Instance().RegisterSection(
-    chirp::FourCC("CVAT"), chirp::binary::ChirpBinaryVat::CreateVATSection,
-    chirp::binary::ChirpBinaryVat::CreateVATSectionWithOffset);
-  const auto section = chirp::binary::ChirpBinarySectionManager::Instance().NewSection("CVAT", 4 * 128, 128);
+
+  chirp::binary::Init();
+
+  chirp::binary::ChirpBinary bin;
+  bin.Import(R"(C:\Git\CHIRP\examples\test.chirb)");
+
   return 0;
 }
