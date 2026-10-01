@@ -1,6 +1,7 @@
 #include "libchirp-binary/libchirp-binary.hpp"
 
 #include "libchirp-binary/ChirpBinarySectionManager.hpp"
+#include "libchirp-binary/section/ChirpBinaryGeo.hpp"
 #include "libchirp-binary/section/ChirpBinaryVat.hpp"
 
 void chirp::binary::Init() {
@@ -9,4 +10,6 @@ void chirp::binary::Init() {
 
   sectionMgr.RegisterSection(chirp::FourCC("CVAT"), chirp::binary::ChirpBinaryVat::CreateVATSection,
                              chirp::binary::ChirpBinaryVat::CreateVATSectionWithOffset);
+  sectionMgr.RegisterSection(chirp::FourCC("CGEO"), chirp::binary::ChirpBinaryGeo::CreateGEOSection,
+                             chirp::binary::ChirpBinaryGeo::CreateGEOSectionWithOffset);
 }

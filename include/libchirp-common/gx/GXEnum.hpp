@@ -63,4 +63,11 @@ enum class VtxComponentType : u8 {
   Rgba6 = 4,
   Rgba8 = 5
 };
+
+enum class VtxAttributeType : u8 {
+  None,
+  Direct,
+  Index8,
+  Index16,
+};
 } // namespace chirp::gx

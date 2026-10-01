@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <string_view>
 
 using u8 = uint8_t;
 using u16 = uint16_t;
@@ -18,7 +19,7 @@ using f32 = float;
 
 namespace chirp {
 /* Type-sensitive byte swappers */
-template <typename T>
+template < typename T >
 constexpr T bswap16(T val) noexcept {
 #if __GNUC__
   return __builtin_bswap16(val);
@@ -29,7 +30,7 @@ constexpr T bswap16(T val) noexcept {
 #endif
 }
 
-template <typename T>
+template < typename T >
 constexpr T bswap32(T val) noexcept {
 #if __GNUC__
   return __builtin_bswap32(val);
@@ -42,15 +43,17 @@ constexpr T bswap32(T val) noexcept {
 #endif
 }
 
-template <typename T>
+template < typename T >
 constexpr T bswap64(T val) noexcept {
 #if __GNUC__
   return __builtin_bswap64(val);
 #elif _WIN32
   return _byteswap_uint64(val);
 #else
-  return ((val & 0xFF00000000000000ULL) >> 56) | ((val & 0x00FF000000000000ULL) >> 40) | ((val & 0x0000FF0000000000ULL) >> 24) | ((val & 0x000000FF00000000ULL) >> 8) |
-         ((val & 0x00000000FF000000ULL) << 8) | ((val & 0x0000000000FF0000ULL) << 24) | ((val & 0x000000000000FF00ULL) << 40) | ((val & 0x00000000000000FFULL) << 56);
+  return ((val & 0xFF00000000000000ULL) >> 56) | ((val & 0x00FF000000000000ULL) >> 40) |
+         ((val & 0x0000FF0000000000ULL) >> 24) | ((val & 0x000000FF00000000ULL) >> 8) |
+         ((val & 0x00000000FF000000ULL) << 8) | ((val & 0x0000000000FF0000ULL) << 24) |
+         ((val & 0x000000000000FF00ULL) << 40) | ((val & 0x00000000000000FFULL) << 56);
 #endif
 }
 
@@ -84,7 +87,9 @@ constexpr double SBig(double val) noexcept {
   return uval2.f;
 }
 #ifndef SBIG
-#define SBIG(q) (((q) & 0x000000FF) << 24 | ((q) & 0x0000FF00) << 8 | ((q) & 0x00FF0000) >> 8 | ((q) & 0xFF000000) >> 24)
+#define SBIG(q)                                                                                    \
+  (((q) & 0x000000FF) << 24 | ((q) & 0x0000FF00) << 8 | ((q) & 0x00FF0000) >> 8 |                  \
+   ((q) & 0xFF000000) >> 24)
 #endif
 
 constexpr int16_t SLittle(int16_t val) noexcept { return val; }
@@ -114,7 +119,9 @@ constexpr double SLittle(double val) noexcept {
   return *((double*)(&ival));
 }
 #ifndef SLITTLE
-#define SLITTLE(q) (((q) & 0x000000FF) << 24 | ((q) & 0x0000FF00) << 8 | ((q) & 0x00FF0000) >> 8 | ((q) & 0xFF000000) >> 24)
+#define SLITTLE(q)                                                                                 \
+  (((q) & 0x000000FF) << 24 | ((q) & 0x0000FF00) << 8 | ((q) & 0x00FF0000) >> 8 |                  \
+   ((q) & 0xFF000000) >> 24)
 #endif
 
 constexpr int16_t SBig(int16_t val) noexcept { return val; }
@@ -142,10 +149,8 @@ public:
   constexpr FourCC() noexcept = default;
   constexpr FourCC(const FourCC& other) noexcept = default;
   constexpr FourCC(FourCC&& other) noexcept = default;
-  constexpr FourCC(const char* name) noexcept
-  : fcc{name[0], name[1], name[2], name[3]} {}
-  constexpr FourCC(uint32_t n) noexcept
-  : num(n) {}
+  constexpr FourCC(const char* name) noexcept : fcc{name[0], name[1], name[2], name[3]} {}
+  constexpr FourCC(uint32_t n) noexcept : num(n) {}
 
   constexpr FourCC& operator=(const FourCC&) noexcept = default;
   constexpr FourCC& operator=(FourCC&&) noexcept = default;
@@ -153,9 +158,13 @@ public:
   constexpr bool operator==(const FourCC& other) const noexcept { return num == other.num; }
   constexpr bool operator!=(const FourCC& other) const noexcept { return !operator==(other); }
   constexpr bool operator<(const FourCC& other) const noexcept { return num < other.num; }
-  constexpr bool operator==(const char* other) const noexcept { return other[0] == fcc[0] && other[1] == fcc[1] && other[2] == fcc[2] && other[3] == fcc[3]; }
+  constexpr bool operator==(const char* other) const noexcept {
+    return other[0] == fcc[0] && other[1] == fcc[1] && other[2] == fcc[2] && other[3] == fcc[3];
+  }
   constexpr bool operator!=(const char* other) const noexcept { return !operator==(other); }
-  constexpr bool operator==(int32_t other) const noexcept { return num == static_cast<uint32_t>(other); }
+  constexpr bool operator==(int32_t other) const noexcept {
+    return num == static_cast< uint32_t >(other);
+  }
   constexpr bool operator!=(int32_t other) const noexcept { return !operator==(other); }
   constexpr bool operator<(int32_t other) const noexcept { return num < other; }
   constexpr bool operator==(uint32_t other) const noexcept { return num == other; }
