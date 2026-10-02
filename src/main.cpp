@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
   chirp::binary::Init();
 
   chirp::binary::ChirpBinary bin;
-  bin.Import(R"(C:\Git\CHIRP\examples\test.chirb)");
+  bin.Import(R"(../../examples/test.chirb)");
 
   return 0;
 }

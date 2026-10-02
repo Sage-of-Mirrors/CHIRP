@@ -5,8 +5,10 @@
 #include <athena/IStreamReader.hpp>
 #include <athena/IStreamWriter.hpp>
 
+#include <cmath>
+
+namespace chirp::binary::util {
 namespace {
-using namespace chirp;
 
 f32 ReadVertexAttributeComponent(athena::io::IStreamReader& inStream,
                                  gx::VtxComponentType compType) {
@@ -45,7 +47,7 @@ f32 ReadVertexAttributeColorComponent(athena::io::IStreamReader& inStream,
 }
 } // namespace
 
-u32 chirp::binary::util::GetComponentCount(gx::VtxAttribute attr, gx::VtxComponentSize compSize) {
+u32 GetComponentCount(gx::VtxAttribute attr, gx::VtxComponentSize compSize) {
   if (attr == gx::VtxAttribute::Position) {
     switch (compSize) {
     case gx::VtxComponentSize::PositionXy:
@@ -87,8 +89,8 @@ u32 chirp::binary::util::GetComponentCount(gx::VtxAttribute attr, gx::VtxCompone
   return 0;
 }
 
-void chirp::binary::util::ReadVertexAttributeGX(athena::io::IStreamReader& inStream,
-                                                ChirpVertexAttribute* attribute, u32 count) {
+void ReadVertexAttributeGX(athena::io::IStreamReader& inStream, ChirpVertexAttribute* attribute,
+                           u32 count) {
   if (!count || !attribute) {
     return;
   }
@@ -117,5 +119,6 @@ void chirp::binary::util::ReadVertexAttributeGX(athena::io::IStreamReader& inStr
   }
 }
 
-void chirp::binary::util::WriteVertexAttributeGX(athena::io::IStreamWriter& outStream,
-                                                 ChirpVertexAttribute* attribute, u32 count) {}
+void WriteVertexAttributeGX(athena::io::IStreamWriter& outStream, ChirpVertexAttribute* attribute,
+                            u32 count) {}
+} // namespace chirp::binary::util

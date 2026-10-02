@@ -5,11 +5,10 @@
 #include "libchirp-binary/section/ChirpBinaryVat.hpp"
 
 void chirp::binary::Init() {
-  chirp::binary::ChirpBinarySectionManager& sectionMgr =
-      chirp::binary::ChirpBinarySectionManager::Instance();
+  ChirpBinarySectionManager& sectionMgr = ChirpBinarySectionManager::Instance();
 
-  sectionMgr.RegisterSection(chirp::FourCC("CVAT"), chirp::binary::ChirpBinaryVat::CreateVATSection,
-                             chirp::binary::ChirpBinaryVat::CreateVATSectionWithOffset);
-  sectionMgr.RegisterSection(chirp::FourCC("CGEO"), chirp::binary::ChirpBinaryGeo::CreateGEOSection,
-                             chirp::binary::ChirpBinaryGeo::CreateGEOSectionWithOffset);
+  sectionMgr.RegisterSection(FourCC("CVAT"), ChirpBinaryVat::CreateVATSection,
+                             ChirpBinaryVat::CreateVATSectionWithOffset);
+  sectionMgr.RegisterSection(chirp::FourCC("CGEO"), ChirpBinaryGeo::CreateGEOSection,
+                             ChirpBinaryGeo::CreateGEOSectionWithOffset);
 }
