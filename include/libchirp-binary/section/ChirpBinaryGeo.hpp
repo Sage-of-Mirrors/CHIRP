@@ -16,9 +16,10 @@ using ChirpBinaryPrimitive = std::vector< ChirpBinaryTriangle >;
 
 class ChirpMesh {
 public:
-  ChirpMesh(std::string_view name);
+  ChirpMesh(std::string_view name, std::string_view materialName);
 
   std::string GetName() const { return m_name; }
+  std::string GetMaterialName() const { return m_materialName; }
 
   bool IsVertexAttributeEnabled(gx::VtxAttribute attr) const {
     return m_enabledAttributes.contains(attr);
@@ -45,6 +46,7 @@ public:
 
 private:
   std::string m_name;
+  std::string m_materialName;
   std::unordered_map< gx::VtxAttribute, gx::VtxAttributeType > m_enabledAttributes;
   std::vector< ChirpBinaryPrimitive > m_primitives;
 };
@@ -58,7 +60,7 @@ public:
   bool Import(athena::io::IStreamReader& inStream) override;
   bool Export(athena::io::IStreamWriter& outStream) override;
 
-  ChirpMesh* CreateMesh(std::string_view name);
+  ChirpMesh* CreateMesh(std::string_view name, std::string_view materialName);
 
   std::vector< std::unique_ptr< ChirpMesh > >& GetMeshes() { return m_meshes; }
 
