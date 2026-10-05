@@ -45,6 +45,13 @@ public:
     return gx::VtxAttributeType::None;
   }
 
+  ChirpBinaryPrimitive& CreatePrimitive() {
+    m_primitives.emplace_back();
+    return m_primitives.back();
+  }
+
+  void ReadPrimitive(athena::io::IStreamReader& inStream);
+
 private:
   std::string m_name;
   std::string m_materialName;

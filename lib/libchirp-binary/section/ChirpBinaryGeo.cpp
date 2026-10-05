@@ -8,6 +8,30 @@ namespace chirp::binary {
 ChirpMesh::ChirpMesh(std::string_view name, std::string_view materialName)
 : m_name(name), m_materialName(materialName) {}
 
+void ChirpMesh::ReadPrimitive(athena::io::IStreamReader& inStream) {
+  ChirpBinaryPrimitive& newPrim = CreatePrimitive();
+
+  u16 vtxCount = inStream.readUint16();
+  u16 triCount = vtxCount / 3;
+
+  for (u32 v = 0; v < triCount; v++) {
+    ChirpBinaryTriangle newTri;
+
+    for (u8 t = 0; t < 3; t++) {
+      for (u8 a = 0; a < static_cast< u8 >(gx::VtxAttribute::VtxAttributeMax); a++) {
+        gx::VtxAttribute curAttr = static_cast< gx::VtxAttribute >(a);
+        if (!IsVertexAttributeEnabled(curAttr)) {
+          continue;
+        }
+
+        newTri[t][curAttr] = inStream.readUint16();
+      }
+    }
+
+    newPrim.push_back(newTri);
+  }
+}
+
 ChirpBinaryGeo::ChirpBinaryGeo() : ChirpBinarySection() {}
 
 ChirpBinaryGeo::ChirpBinaryGeo(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor)
@@ -56,18 +80,7 @@ bool ChirpBinaryGeo::Import(athena::io::IStreamReader& inStream) {
 
     inStream.seek(m_offset + primitivesOffset + primitiveOffset, athena::SeekOrigin::Begin);
     for (u32 p = 0; p < primitiveCount; p++) {
-      u16 vtxCount = inStream.readUint16();
-      for (u32 v = 0; v < vtxCount; v++) {
-        for (u8 a = 0; a < static_cast< u8 >(gx::VtxAttribute::VtxAttributeMax); a++) {
-          gx::VtxAttribute curAttr = static_cast< gx::VtxAttribute >(a);
-          if (!newMesh->IsVertexAttributeEnabled(curAttr)) {
-            continue;
-          }
-
-          // TODO: finish this
-          u16 idx = inStream.readUint16();
-        }
-      }
+      newMesh->ReadPrimitive(inStream);
     }
 
     inStream.seek(nextMeshPos, athena::SeekOrigin::Begin);

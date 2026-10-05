@@ -56,8 +56,9 @@ bool ChirpBinary::Import(athena::io::IStreamReader& inStream) {
     u32 sectionElementCount = inStream.readUint32();
 
     std::unique_ptr< ChirpBinarySection > newSection =
-        ChirpBinarySectionManager::Instance().NewSectionWithOffset(
-            sectionFourcc, sectionStart, sectionSize, sectionElementCount, versionMajor, versionMinor);
+        ChirpBinarySectionManager::Instance().NewSectionWithOffset(sectionFourcc, sectionStart,
+                                                                   sectionSize, sectionElementCount,
+                                                                   versionMajor, versionMinor);
 
     if (!newSection) {
       return false;
