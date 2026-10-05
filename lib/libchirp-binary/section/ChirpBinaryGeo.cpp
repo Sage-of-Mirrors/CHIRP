@@ -15,7 +15,8 @@ void ChirpMesh::ReadPrimitive(athena::io::IStreamReader& inStream) {
   u16 triCount = vtxCount / 3;
 
   for (u32 v = 0; v < triCount; v++) {
-    ChirpBinaryTriangle newTri;
+    newPrim.emplace_back();
+    ChirpBinaryTriangle& newTri = newPrim.back();
 
     for (u8 t = 0; t < 3; t++) {
       for (u8 a = 0; a < static_cast< u8 >(gx::VtxAttribute::VtxAttributeMax); a++) {
@@ -27,8 +28,6 @@ void ChirpMesh::ReadPrimitive(athena::io::IStreamReader& inStream) {
         newTri[t][curAttr] = inStream.readUint16();
       }
     }
-
-    newPrim.push_back(newTri);
   }
 }
 
