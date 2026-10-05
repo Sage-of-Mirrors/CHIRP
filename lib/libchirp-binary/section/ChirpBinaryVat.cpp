@@ -9,14 +9,17 @@
 namespace chirp::binary {
 ChirpBinaryVat::ChirpBinaryVat() : ChirpBinarySection() {}
 
-ChirpBinaryVat::ChirpBinaryVat(u32 size, u32 elementCount)
-: ChirpBinarySection(ChirpSectionType::Vertex, size, elementCount) {}
+ChirpBinaryVat::ChirpBinaryVat(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor)
+: ChirpBinarySection(ChirpSectionType::Vertex, size, elementCount, versionMajor, versionMinor) {}
 
-ChirpBinaryVat::ChirpBinaryVat(u64 offset, u32 size, u32 elementCount)
-: ChirpBinarySection(ChirpSectionType::Vertex, offset, size, elementCount) {}
+ChirpBinaryVat::ChirpBinaryVat(u64 offset, u32 size, u32 elementCount, u16 versionMajor,
+                               u16 versionMinor)
+: ChirpBinarySection(ChirpSectionType::Vertex, offset, size, elementCount, versionMajor,
+                     versionMinor) {}
 
 bool ChirpBinaryVat::Import(athena::io::IStreamReader& inStream) {
   u32 dataOffset = inStream.readUint32();
+  inStream.seekAlign16();
 
   for (u32 i = 0; i < m_elementCount; i++) {
     u32 attrCount = inStream.readUint32();
@@ -124,12 +127,16 @@ ChirpVertexAttribute* ChirpBinaryVat::CreateVertexAttribute(
 }
 
 std::unique_ptr< ChirpBinarySection > ChirpBinaryVat::CreateVATSection(const u32 size,
-                                                                       const u32 elementCount) {
-  return std::make_unique< ChirpBinaryVat >(ChirpBinaryVat(size, elementCount));
+                                                                       const u32 elementCount,
+                                                                       u16 versionMajor,
+                                                                       u16 versionMinor) {
+  return std::make_unique< ChirpBinaryVat >(
+      ChirpBinaryVat(size, elementCount, versionMajor, versionMinor));
 }
 std::unique_ptr< ChirpBinarySection >
-ChirpBinaryVat::CreateVATSectionWithOffset(const u64 offset, const u32 size,
-                                           const u32 elementCount) {
-  return std::make_unique< ChirpBinaryVat >(ChirpBinaryVat(offset, size, elementCount));
+ChirpBinaryVat::CreateVATSectionWithOffset(const u64 offset, const u32 size, const u32 elementCount,
+                                           u16 versionMajor, u16 versionMinor) {
+  return std::make_unique< ChirpBinaryVat >(
+      ChirpBinaryVat(offset, size, elementCount, versionMajor, versionMinor));
 }
 } // namespace chirp::binary

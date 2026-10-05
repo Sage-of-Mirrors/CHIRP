@@ -48,8 +48,8 @@ private:
 class ChirpBinaryVat : public ChirpBinarySection {
 public:
   ChirpBinaryVat();
-  ChirpBinaryVat(u32 size, u32 elementCount);
-  ChirpBinaryVat(u64 offset, u32 size, u32 elementCount);
+  ChirpBinaryVat(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
+  ChirpBinaryVat(u64 offset, u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
 
   bool Import(athena::io::IStreamReader& inStream) override;
   bool Export(athena::io::IStreamWriter& outStream) override;
@@ -63,9 +63,12 @@ public:
                                               gx::VtxComponentSize size, gx::VtxComponentType type,
                                               u8 exponent = 0);
 
-  static std::unique_ptr< ChirpBinarySection > CreateVATSection(u32 size, u32 elementCount);
+  static std::unique_ptr< ChirpBinarySection > CreateVATSection(u32 size, u32 elementCount,
+                                                                u16 versionMajor, u16 versionMinor);
   static std::unique_ptr< ChirpBinarySection > CreateVATSectionWithOffset(u64 offset, u32 size,
-                                                                          u32 elementCount);
+                                                                          u32 elementCount,
+                                                                          u16 versionMajor,
+                                                                          u16 versionMinor);
 
 private:
   void ReadVertexAttributeData(athena::io::IStreamReader& inStream, u32 count,

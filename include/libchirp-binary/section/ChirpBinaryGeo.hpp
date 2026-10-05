@@ -34,6 +34,7 @@ public:
     }
 
     m_enabledAttributes[attr] = type;
+    return true;
   }
 
   gx::VtxAttributeType GetVertexAttributeType(gx::VtxAttribute attr) const {
@@ -54,8 +55,8 @@ private:
 class ChirpBinaryGeo : public ChirpBinarySection {
 public:
   ChirpBinaryGeo();
-  ChirpBinaryGeo(u32 size, u32 elementCount);
-  ChirpBinaryGeo(u64 offset, u32 size, u32 elementCount);
+  ChirpBinaryGeo(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
+  ChirpBinaryGeo(u64 offset, u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
 
   bool Import(athena::io::IStreamReader& inStream) override;
   bool Export(athena::io::IStreamWriter& outStream) override;
@@ -64,9 +65,12 @@ public:
 
   std::vector< std::unique_ptr< ChirpMesh > >& GetMeshes() { return m_meshes; }
 
-  static std::unique_ptr< ChirpBinarySection > CreateGEOSection(u32 size, u32 elementCount);
+  static std::unique_ptr< ChirpBinarySection > CreateGEOSection(u32 size, u32 elementCount,
+                                                                u16 versionMajor, u16 versionMinor);
   static std::unique_ptr< ChirpBinarySection > CreateGEOSectionWithOffset(u64 offset, u32 size,
-                                                                          u32 elementCount);
+                                                                          u32 elementCount,
+                                                                          u16 versionMajor,
+                                                                          u16 versionMinor);
 
 private:
   std::vector< std::unique_ptr< ChirpMesh > > m_meshes;

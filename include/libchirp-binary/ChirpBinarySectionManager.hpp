@@ -8,10 +8,10 @@ namespace chirp::binary {
 class ChirpBinarySection;
 class ChirpBinarySectionManager {
 public:
-  using FSectionFactory =
-      std::function< std::unique_ptr< ChirpBinarySection >(u32 size, u32 elementCount) >;
+  using FSectionFactory = std::function< std::unique_ptr< ChirpBinarySection >(
+      u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor) >;
   using FSectionWithOffsetFactory = std::function< std::unique_ptr< ChirpBinarySection >(
-      u64 offset, u32 size, u32 elementCount) >;
+      u64 offset, u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor) >;
 
   ChirpBinarySectionManager(const ChirpBinarySectionManager&) = delete;
   ChirpBinarySectionManager& operator=(const ChirpBinarySectionManager&) = delete;
@@ -23,11 +23,13 @@ public:
   bool RegisterSection(const FourCC& typeId, FSectionFactory factory,
                        FSectionWithOffsetFactory offsetFactory);
 
-  std::unique_ptr< ChirpBinarySection > NewSection(const FourCC& typeId, u32 size,
-                                                   u32 elementCount);
+  std::unique_ptr< ChirpBinarySection > NewSection(const FourCC& typeId, u32 size, u32 elementCount,
+                                                   u16 versionMajor = 0, u16 versionMinor = 0);
 
   std::unique_ptr< ChirpBinarySection > NewSectionWithOffset(const FourCC& typeId, u64 offset,
-                                                             u32 size, u32 elementCount);
+                                                             u32 size, u32 elementCount,
+                                                             u16 versionMajor = 0,
+                                                             u16 versionMinor = 0);
 
 private:
   ChirpBinarySectionManager() = default;

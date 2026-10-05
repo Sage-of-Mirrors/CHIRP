@@ -19,24 +19,25 @@ bool ChirpBinarySectionManager::RegisterSection(const FourCC& typeId, FSectionFa
 }
 
 std::unique_ptr< ChirpBinarySection >
-ChirpBinarySectionManager::NewSection(const FourCC& typeId, const u32 size,
-                                      const u32 elementCount) {
+ChirpBinarySectionManager::NewSection(const FourCC& typeId, const u32 size, const u32 elementCount,
+                                      u16 versionMajor, u16 versionMinor) {
   if (!mSectionFactories.contains(typeId)) {
     std::cerr << std::format("Factory not registered for {}", typeId.toString()) << std::endl;
     return nullptr;
   }
 
-  return mSectionFactories[typeId].first(size, elementCount);
+  return mSectionFactories[typeId].first(size, elementCount, versionMajor, versionMinor);
 }
 
 std::unique_ptr< ChirpBinarySection >
 ChirpBinarySectionManager::NewSectionWithOffset(const FourCC& typeId, const u64 offset,
-                                                const u32 size, const u32 elementCount) {
+                                                const u32 size, const u32 elementCount,
+                                                u16 versionMajor, u16 versionMinor) {
   if (!mSectionFactories.contains(typeId)) {
     std::cerr << std::format("Factory not registered for {}", typeId.toString()) << std::endl;
     return nullptr;
   }
 
-  return mSectionFactories[typeId].second(offset, size, elementCount);
+  return mSectionFactories[typeId].second(offset, size, elementCount, versionMajor, versionMinor);
 }
 } // namespace chirp::binary
