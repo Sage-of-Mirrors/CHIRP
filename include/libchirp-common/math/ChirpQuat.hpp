@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ChirpCommon.hpp"
+#include "libchirp-common/ChirpCommon.hpp"
 
 namespace chirp::math {
 class ChirpQuaternion {
