@@ -70,7 +70,7 @@ enum class Compare : u8 { Never, Less, Equal, LEqual, Greater, NEqual, GEqual, A
 
 enum class AlphaOp : u8 { And, Or, Xor, Xnor, Max };
 
-enum class BlendMode : u8 { None, Blend, Logic, Subtract, Max };
+enum class BlendType : u8 { None, Blend, Logic, Subtract, Max };
 
 enum class BlendFactor : u8 {
   Zero,

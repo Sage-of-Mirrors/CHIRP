@@ -4,14 +4,9 @@
 
 #include "libchirp-binary/section/ChirpBinarySection.hpp"
 
-namespace chirp::binary {
-class ChirpMaterial {
-public:
-  ChirpMaterial(std::string_view name) : m_name(name) {}
+#include <libchirp-common/gx/Material.hpp>
 
-private:
-  std::string m_name;
-};
+namespace chirp::binary {
 class ChirpBinaryMaterials : public ChirpBinarySection {
 public:
   ChirpBinaryMaterials();
