@@ -2,6 +2,7 @@
 
 #include "libchirp-binary/ChirpBinarySectionManager.hpp"
 #include "libchirp-binary/section/ChirpBinaryGeo.hpp"
+#include "libchirp-binary/section/ChirpBinaryMat.hpp"
 #include "libchirp-binary/section/ChirpBinaryScene.hpp"
 #include "libchirp-binary/section/ChirpBinaryVat.hpp"
 
@@ -10,8 +11,10 @@ void chirp::binary::Init() {
 
   sectionMgr.RegisterSection(FourCC("CVAT"), ChirpBinaryVat::CreateVATSection,
                              ChirpBinaryVat::CreateVATSectionWithOffset);
-  sectionMgr.RegisterSection(chirp::FourCC("CGEO"), ChirpBinaryGeo::CreateGEOSection,
+  sectionMgr.RegisterSection(FourCC("CGEO"), ChirpBinaryGeo::CreateGEOSection,
                              ChirpBinaryGeo::CreateGEOSectionWithOffset);
-  sectionMgr.RegisterSection(chirp::FourCC("CSCN"), ChirpBinaryScene::CreateSCNSection,
+  sectionMgr.RegisterSection(FourCC("CSCN"), ChirpBinaryScene::CreateSCNSection,
                              ChirpBinaryScene::CreateSCNSectionWithOffset);
+  sectionMgr.RegisterSection(FourCC("CMAT"), ChirpBinaryMaterials::CreateMATSection,
+                             ChirpBinaryMaterials::CreateMATSectionWithOffset);
 }
