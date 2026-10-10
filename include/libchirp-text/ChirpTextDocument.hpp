@@ -1,5 +1,5 @@
 #pragma once
-#include "libchirp-binary/ChirpErrorSource.hpp"
+#include "libchirp/ChirpErrorSource.hpp"
 #include "libchirp-text/ChirpTextValue.hpp"
 #include <memory>
 #include <string>

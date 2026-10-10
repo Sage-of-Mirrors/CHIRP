@@ -1,5 +1,5 @@
-#include <libchirp-binary/libchirp-binary.hpp>
-#include <libchirp-binary/ChirpBinary.hpp>
+#include <libchirp/libchirp.hpp>
+#include <libchirp/ChirpBinary.hpp>
 
 #include <filesystem>
 #include <iostream>
@@ -15,7 +15,7 @@ void PrintTitle() {
 int main(int argc, char* argv[]) {
   PrintTitle();
 
-  chirp::binary::Init();
+  chirp::Init();
 
   chirp::binary::ChirpBinary bin;
   bin.Import(R"(../../examples/test.chirb)");

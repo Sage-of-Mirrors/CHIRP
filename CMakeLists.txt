@@ -10,7 +10,7 @@ option(CHIRP_BUILD_TEXT_LIB "Build libchirp-text" ON)
 
 add_subdirectory(extern)
 
-include(cmake/libchirp-binary.cmake)
+include(cmake/libchirp.cmake)
 
 if (CHIRP_BUILD_TEXT_LIB)
   include(cmake/libchirp-text.cmake)

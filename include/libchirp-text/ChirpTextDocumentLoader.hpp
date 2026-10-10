@@ -1,5 +1,5 @@
 #pragma once
-#include "libchirp-binary/ChirpDiagnostic.hpp"
+#include "libchirp/ChirpDiagnostic.hpp"
 #include "libchirp-text/ChirpTextDocument.hpp"
 #include <filesystem>
 #include <functional>

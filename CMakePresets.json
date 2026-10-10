@@ -28,23 +28,6 @@
       }
     },
     {
-      "name": "libchirp-binary",
-      "hidden": true,
-      "cacheVariables": {
-        "CHIRP_BUILD_BINARY_LIB": true
-      }
-    },
-    {
-      "name": "libchirp-binary-debug",
-      "displayName": "libchirp-binary (debug)",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/${presetName}",
-      "inherits": [
-        "debug",
-        "libchirp-binary"
-      ]
-    },
-    {
       "name": "libchirp-text",
       "hidden": true,
       "cacheVariables": {
@@ -82,7 +65,6 @@
       "name": "chirp-full-debug",
       "displayName": "chirp (debug)",
       "inherits": [
-        "libchirp-binary-debug",
         "libchirp-text-debug",
         "chirp-cli-debug"
       ]

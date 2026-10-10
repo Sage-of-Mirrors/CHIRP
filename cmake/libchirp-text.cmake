@@ -10,6 +10,5 @@ add_library(libchirp_text STATIC ${LIBCHIRP_TEXT_SRC})
 add_library(chirp::text ALIAS libchirp_text)
 
 set_target_properties(libchirp_text PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(libchirp_text PUBLIC chirp::binary)
+target_link_libraries(libchirp_text PUBLIC chirp)
 target_include_directories(libchirp_text PUBLIC athena-core include)
-target_include_directories(libchirp_binary PUBLIC include extern/athena/include)
