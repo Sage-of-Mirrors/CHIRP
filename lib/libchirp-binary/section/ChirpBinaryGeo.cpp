@@ -41,11 +41,11 @@ ChirpBinaryGeo::ChirpBinaryGeo(u64 offset, u32 size, u32 elementCount, u16 versi
 : ChirpBinarySection(ChirpSectionType::Geometry, offset, size, elementCount, versionMajor,
                      versionMinor) {}
 
-bool ChirpBinaryGeo::Import(athena::io::IStreamReader& inStream) {
-  u32 vtxAttributeTableOffset = inStream.readUint32();
-  u32 primitivesOffset = inStream.readUint32();
-  u32 meshNameTableOffset = inStream.readUint32();
-  u32 materialNameTableOffset = inStream.readUint32();
+bool ChirpBinaryGeo::Import(SectionReader& inStream) {
+  m_attributesOffset = inStream.readUint32();
+  m_primitivesOffset = inStream.readUint32();
+  m_meshNamesOffset = inStream.readUint32();
+  m_materialNamesOffset = inStream.readUint32();
 
   for (u32 i = 0; i < m_elementCount; i++) {
     u16 meshNameLength = inStream.readUint16();
@@ -58,26 +58,26 @@ bool ChirpBinaryGeo::Import(athena::io::IStreamReader& inStream) {
     u32 vtxAttributesOffset = inStream.readUint32();
     u32 primitiveOffset = inStream.readUint32();
 
-    u64 nextMeshPos = inStream.position();
-
-    inStream.seek(m_offset + meshNameTableOffset + meshNameOffset, athena::SeekOrigin::Begin);
+    // Read the mesh's name.
+    s64 nextMeshPos = SeekToChunk(inStream, static_cast< u8 >(ChunkId::MeshNames), meshNameOffset);
     std::string meshName = inStream.readString(meshNameLength);
 
-    inStream.seek(m_offset + materialNameTableOffset + materialNameOffset,
-                  athena::SeekOrigin::Begin);
+    // Read the name of the mesh's material.
+    SeekToChunk(inStream, static_cast< u8 >(ChunkId::MaterialNames), materialNameOffset);
     std::string materialName = inStream.readString(materialNameLength);
 
     ChirpMesh* newMesh = CreateMesh(meshName, materialName);
 
-    inStream.seek(m_offset + vtxAttributeTableOffset + vtxAttributesOffset,
-                  athena::SeekOrigin::Begin);
+    // Read the mesh's enabled vertex attributes.
+    SeekToChunk(inStream, static_cast< u8 >(ChunkId::Attributes), vtxAttributesOffset);
     for (u32 a = 0; a < attributeCount; a++) {
       gx::VtxAttribute attr = static_cast< gx::VtxAttribute >(inStream.readByte());
       gx::VtxAttributeType type = static_cast< gx::VtxAttributeType >(inStream.readByte());
       newMesh->EnableVertexAttribute(attr, type);
     }
 
-    inStream.seek(m_offset + primitivesOffset + primitiveOffset, athena::SeekOrigin::Begin);
+    // Read the mesh's primitives.
+    SeekToChunk(inStream, static_cast< u8 >(ChunkId::Primitives), primitiveOffset);
     for (u32 p = 0; p < primitiveCount; p++) {
       newMesh->ReadPrimitive(inStream);
     }
@@ -89,6 +89,33 @@ bool ChirpBinaryGeo::Import(athena::io::IStreamReader& inStream) {
 }
 
 bool ChirpBinaryGeo::Export(athena::io::IStreamWriter& outStream) { return true; }
+
+s64 ChirpBinaryGeo::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
+  ChunkId chunk = static_cast< ChunkId >(chunkId);
+
+  u32 chunkOffset{0};
+  switch (chunk) {
+  case ChunkId::Attributes:
+    chunkOffset = m_attributesOffset;
+    break;
+  case ChunkId::Primitives:
+    chunkOffset = m_primitivesOffset;
+    break;
+  case ChunkId::MeshNames:
+    chunkOffset = m_meshNamesOffset;
+    break;
+  case ChunkId::MaterialNames:
+    chunkOffset = m_materialNamesOffset;
+    break;
+  default:
+    break;
+  }
+
+  s64 curPos = sectionReader.position();
+  sectionReader.seek(m_offset + chunkOffset + dataOffset, athena::SeekOrigin::Begin);
+
+  return curPos;
+}
 
 ChirpMesh* ChirpBinaryGeo::CreateMesh(std::string_view name, std::string_view materialName) {
   auto newMesh = std::make_unique< ChirpMesh >(name, materialName);

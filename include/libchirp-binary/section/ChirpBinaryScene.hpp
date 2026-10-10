@@ -35,7 +35,7 @@ public:
   ChirpBinaryScene(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
   ChirpBinaryScene(u64 offset, u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
 
-  bool Import(athena::io::IStreamReader& inStream) override;
+  bool Import(SectionReader& inStream) override;
   bool Export(athena::io::IStreamWriter& outStream) override;
 
   ChirpJoint* CreateJoint(std::string_view name,
@@ -57,7 +57,15 @@ public:
                                                                           u16 versionMajor,
                                                                           u16 versionMinor);
 
+protected:
+  s64 SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset = 0) override;
+
 private:
+  enum class ChunkId : u8 { ChildIndices, JointNames };
+
+  u32 m_childIndicesOffset{0};
+  u32 m_jointNamesOffset{0};
+
   std::vector< std::unique_ptr< ChirpJoint > > m_joints;
   std::map< std::string, ChirpJoint* > m_jointNameMap;
 };

@@ -13,9 +13,9 @@ ChirpBinaryScene::ChirpBinaryScene(u64 offset, u32 size, u32 elementCount, u16 v
 : ChirpBinarySection(ChirpSectionType::Scenegraph, offset, size, elementCount, versionMajor,
                      versionMinor) {}
 
-bool ChirpBinaryScene::Import(athena::io::IStreamReader& inStream) {
-  u32 childIndexTableOffset = inStream.readUint32();
-  u32 nameTableOffset = inStream.readUint32();
+bool ChirpBinaryScene::Import(SectionReader& inStream) {
+  m_childIndicesOffset = inStream.readUint32();
+  m_jointNamesOffset = inStream.readUint32();
   inStream.seekAlign16();
 
   for (u32 i = 0; i < m_elementCount; i++) {
@@ -27,22 +27,19 @@ bool ChirpBinaryScene::Import(athena::io::IStreamReader& inStream) {
     u32 nameOffset = inStream.readUint32();
     u32 firstChildIndexOffset = inStream.readUint32();
 
-    u64 curPos = inStream.position();
-
-    inStream.seek(m_offset + nameTableOffset + nameOffset, athena::SeekOrigin::Begin);
+    s64 returnPos = SeekToChunk(inStream, static_cast< u8 >(ChunkId::JointNames), nameOffset);
     std::string name = inStream.readString(nameLength);
 
     ChirpJoint* newJoint = CreateJoint(name, parentIndex);
 
     if (childCount) {
-      inStream.seek(m_offset + childIndexTableOffset + firstChildIndexOffset,
-                    athena::SeekOrigin::Begin);
+      SeekToChunk(inStream, static_cast< u8 >(ChunkId::ChildIndices), firstChildIndexOffset);
       for (u32 c = 0; c < childCount; c++) {
         newJoint->AddChildIndex(inStream.readUint16());
       }
     }
 
-    inStream.seek(curPos, athena::SeekOrigin::Begin);
+    inStream.seek(returnPos, athena::SeekOrigin::Begin);
 
     chirp::math::ChirpTransform& jointTransform = newJoint->GetTransform();
     jointTransform.Position().X() = inStream.readFloat();
@@ -62,6 +59,27 @@ bool ChirpBinaryScene::Import(athena::io::IStreamReader& inStream) {
   return true;
 }
 bool ChirpBinaryScene::Export(athena::io::IStreamWriter& outStream) { return true; }
+
+s64 ChirpBinaryScene::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
+  ChunkId chunk = static_cast< ChunkId >(chunkId);
+
+  u32 chunkOffset{0};
+  switch (chunk) {
+  case ChunkId::ChildIndices:
+    chunkOffset = m_childIndicesOffset;
+    break;
+  case ChunkId::JointNames:
+    chunkOffset = m_jointNamesOffset;
+    break;
+  default:
+    break;
+  }
+
+  s64 curPos = sectionReader.position();
+  sectionReader.seek(m_offset + chunkOffset + dataOffset, athena::SeekOrigin::Begin);
+
+  return curPos;
+}
 
 ChirpJoint* ChirpBinaryScene::CreateJoint(std::string_view name, u16 parentIndex) {
   std::string nameAsStr(name);

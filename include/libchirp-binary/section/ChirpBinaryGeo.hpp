@@ -65,7 +65,7 @@ public:
   ChirpBinaryGeo(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
   ChirpBinaryGeo(u64 offset, u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
 
-  bool Import(athena::io::IStreamReader& inStream) override;
+  bool Import(SectionReader& inStream) override;
   bool Export(athena::io::IStreamWriter& outStream) override;
 
   ChirpMesh* CreateMesh(std::string_view name, std::string_view materialName);
@@ -79,7 +79,17 @@ public:
                                                                           u16 versionMajor,
                                                                           u16 versionMinor);
 
+protected:
+  s64 SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset = 0) override;
+
 private:
+  enum class ChunkId : u8 { Attributes, Primitives, MeshNames, MaterialNames };
+
+  u32 m_attributesOffset{0};
+  u32 m_primitivesOffset{0};
+  u32 m_meshNamesOffset{0};
+  u32 m_materialNamesOffset{0};
+
   std::vector< std::unique_ptr< ChirpMesh > > m_meshes;
 };
 } // namespace chirp::binary

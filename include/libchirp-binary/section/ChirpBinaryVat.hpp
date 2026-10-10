@@ -51,7 +51,7 @@ public:
   ChirpBinaryVat(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
   ChirpBinaryVat(u64 offset, u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
 
-  bool Import(athena::io::IStreamReader& inStream) override;
+  bool Import(SectionReader& inStream) override;
   bool Export(athena::io::IStreamWriter& outStream) override;
 
   ChirpVertexAttribute* GetVertexAttribute(gx::VtxAttribute attr);
@@ -70,11 +70,18 @@ public:
                                                                           u16 versionMajor,
                                                                           u16 versionMinor);
 
+protected:
+  s64 SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset = 0) override;
+
 private:
+  enum class ChunkId : u8 { Attributes };
+
   void ReadVertexAttributeData(athena::io::IStreamReader& inStream, u32 count,
                                ChirpVertexAttribute* attribute);
   void WriteVertexAttributeData(athena::io::IStreamWriter& outStream, u32 count,
                                 ChirpVertexAttribute* attribute);
+
+  u32 m_attributesOffset{0};
 
   std::unordered_map< gx::VtxAttribute, std::unique_ptr< ChirpVertexAttribute > > m_attributes;
 };

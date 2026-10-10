@@ -13,8 +13,32 @@ ChirpBinaryMaterials::ChirpBinaryMaterials(u64 offset, u32 size, u32 elementCoun
 : ChirpBinarySection(ChirpSectionType::Materials, offset, size, elementCount, versionMajor,
                      versionMinor) {}
 
-bool ChirpBinaryMaterials::Import(athena::io::IStreamReader& inStream) { return true; }
+bool ChirpBinaryMaterials::Import(SectionReader& inStream) { return true; }
 bool ChirpBinaryMaterials::Export(athena::io::IStreamWriter& outStream) { return true; }
+
+s64 ChirpBinaryMaterials::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
+  ChunkId chunk = static_cast< ChunkId >(chunkId);
+
+  u32 chunkOffset{0};
+  switch (chunk) {
+  case ChunkId::AlphaCompares:
+    chunkOffset = m_alphaComparesOffset;
+    break;
+  case ChunkId::BlendModes:
+    chunkOffset = m_blendModesOffset;
+    break;
+  case ChunkId::Fog:
+    chunkOffset = m_fogOffset;
+    break;
+  default:
+    break;
+  }
+
+  s64 curPos = sectionReader.position();
+  sectionReader.seek(m_offset + chunkOffset + dataOffset, athena::SeekOrigin::Begin);
+
+  return curPos;
+}
 
 std::unique_ptr< ChirpBinarySection > ChirpBinaryMaterials::CreateMATSection(u32 size,
                                                                              u32 elementCount,

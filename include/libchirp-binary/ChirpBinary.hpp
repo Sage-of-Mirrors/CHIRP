@@ -2,7 +2,7 @@
 
 #include <libchirp-common/ChirpCommon.hpp>
 
-#include "section/ChirpBinarySection.hpp"
+#include "libchirp-binary/section/ChirpBinarySection.hpp"
 
 #include <unordered_map>
 

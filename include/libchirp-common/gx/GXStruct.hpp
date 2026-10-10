@@ -122,7 +122,7 @@ struct TevIndirectTile {
   IndirectTexFormat m_format;
   IndirectTexMtxId m_matrixSel;
   IndirectTexBiasSel m_biasSel;
-  IndirectTexAlphaSel m_alphaSel
+  IndirectTexAlphaSel m_alphaSel;
 };
 
 struct TevIndirectStage {

@@ -17,8 +17,8 @@ ChirpBinaryVat::ChirpBinaryVat(u64 offset, u32 size, u32 elementCount, u16 versi
 : ChirpBinarySection(ChirpSectionType::Vertex, offset, size, elementCount, versionMajor,
                      versionMinor) {}
 
-bool ChirpBinaryVat::Import(athena::io::IStreamReader& inStream) {
-  u32 dataOffset = inStream.readUint32();
+bool ChirpBinaryVat::Import(SectionReader& inStream) {
+  m_attributesOffset = inStream.readUint32();
   inStream.seekAlign16();
 
   for (u32 i = 0; i < m_elementCount; i++) {
@@ -36,21 +36,38 @@ bool ChirpBinaryVat::Import(athena::io::IStreamReader& inStream) {
       return false;
     }
 
-    u64 curPos = inStream.position();
-    inStream.seek(m_offset + dataOffset + attrOffset, athena::SeekOrigin::Begin);
+    s64 returnPos = SeekToChunk(inStream, static_cast< u8 >(ChunkId::Attributes), attrOffset);
 
     // TODO: Make endianness toggleable via ChirpBinaryImportOptions?
     inStream.setEndian(athena::Endian::Big);
     ReadVertexAttributeData(inStream, attrCount, newAttribute);
     inStream.setEndian(athena::Endian::Little);
 
-    inStream.seek(curPos, athena::SeekOrigin::Begin);
+    inStream.seek(returnPos);
   }
 
   return true;
 }
 
 bool ChirpBinaryVat::Export(athena::io::IStreamWriter& outStream) { return true; }
+
+s64 ChirpBinaryVat::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
+  ChunkId chunk = static_cast< ChunkId >(chunkId);
+
+  u32 chunkOffset{0};
+  switch (chunk) {
+  case ChunkId::Attributes:
+    chunkOffset = m_attributesOffset;
+    break;
+  default:
+    break;
+  }
+
+  s64 curPos = sectionReader.position();
+  sectionReader.seek(m_offset + chunkOffset + dataOffset, athena::SeekOrigin::Begin);
+
+  return curPos;
+}
 
 void ChirpBinaryVat::ReadVertexAttributeData(athena::io::IStreamReader& inStream, u32 count,
                                              ChirpVertexAttribute* attribute) {

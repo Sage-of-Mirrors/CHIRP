@@ -64,7 +64,8 @@ bool ChirpBinary::Import(athena::io::IStreamReader& inStream) {
       return false;
     }
 
-    newSection->Import(inStream);
+    SectionReader sectionReader(inStream, sectionStart, sectionStart + sectionSize);
+    newSection->Import(sectionReader);
     m_sections[newSection->GetType()] = std::move(newSection);
 
     inStream.seek(static_cast< s64 >(sectionStart + sectionSize), athena::SeekOrigin::Begin);
