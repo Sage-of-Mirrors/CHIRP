@@ -1,4 +1,4 @@
-#include "libchirp-common/ChirpDiagnostic.hpp"
+#include "libchirp-binary/ChirpDiagnostic.hpp"
 
 #include <algorithm>
 

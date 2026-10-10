@@ -1,4 +1,5 @@
 #include "libchirp-text/ChirpTextParser.hpp"
+
 #include <cstdlib>
 
 namespace chirp::text {

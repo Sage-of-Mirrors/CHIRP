@@ -1,5 +1,4 @@
 #include "libchirp-binary/util/VertexUtils.hpp"
-
 #include "libchirp-binary/section/ChirpBinaryVat.hpp"
 
 #include <athena/IStreamReader.hpp>

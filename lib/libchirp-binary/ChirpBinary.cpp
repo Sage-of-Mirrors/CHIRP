@@ -1,5 +1,4 @@
 #include "libchirp-binary/ChirpBinary.hpp"
-
 #include "libchirp-binary/ChirpBinarySectionManager.hpp"
 
 #include <athena/FileReader.hpp>

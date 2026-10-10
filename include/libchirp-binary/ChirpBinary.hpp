@@ -1,7 +1,6 @@
 #pragma once
 
-#include <libchirp-common/ChirpCommon.hpp>
-
+#include "libchirp-binary/ChirpCommon.hpp"
 #include "libchirp-binary/section/ChirpBinarySection.hpp"
 
 #include <unordered_map>

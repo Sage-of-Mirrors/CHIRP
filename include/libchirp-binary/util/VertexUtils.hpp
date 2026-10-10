@@ -1,9 +1,8 @@
 #pragma once
 
-#include <libchirp-common/ChirpCommon.hpp>
-
-#include <libchirp-common/gx/GXEnum.hpp>
-#include <libchirp-common/math/ChirpVector.hpp>
+#include "libchirp-binary/ChirpCommon.hpp"
+#include "libchirp-binary/gx/GXEnum.hpp"
+#include "libchirp-binary/math/ChirpVector.hpp"
 
 namespace athena::io {
 class IStreamReader;

@@ -1,8 +1,7 @@
 #pragma once
 
-#include <libchirp-common/ChirpCommon.hpp>
-#include <libchirp-common/gx/GXEnum.hpp>
-
+#include "libchirp-binary/ChirpCommon.hpp"
+#include "libchirp-binary/gx/GXEnum.hpp"
 #include "libchirp-binary/section/ChirpBinarySection.hpp"
 
 #include <array>

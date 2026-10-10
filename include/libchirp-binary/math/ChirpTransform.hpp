@@ -1,8 +1,8 @@
 #pragma once
 
-#include "libchirp-common/ChirpCommon.hpp"
-#include "libchirp-common/math/ChirpQuat.hpp"
-#include "libchirp-common/math/ChirpVector.hpp"
+#include "libchirp-binary/ChirpCommon.hpp"
+#include "libchirp-binary/math/ChirpQuat.hpp"
+#include "libchirp-binary/math/ChirpVector.hpp"
 
 namespace chirp::math {
 class ChirpTransform {

@@ -1,4 +1,4 @@
-#include "libchirp-common/math/ChirpVector.hpp"
+#include "libchirp-binary/math/ChirpVector.hpp"
 
 namespace chirp::math {
 ChirpVector2::operator ChirpVector3() const { return ChirpVector3(m_x, m_y, 0.0f); }

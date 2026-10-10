@@ -1,6 +1,6 @@
 #pragma once
-#include "libchirp-common/ChirpCommon.hpp"
-#include "libchirp-common/ChirpErrorSource.hpp"
+#include "libchirp-binary/ChirpCommon.hpp"
+#include "libchirp-binary/ChirpErrorSource.hpp"
 #include <cstdint>
 #include <string>
 #include <variant>

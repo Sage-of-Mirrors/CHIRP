@@ -1,4 +1,5 @@
 #include "libchirp-text/ChirpTextLexer.hpp"
+
 #include <cctype>
 #include <stdexcept>
 

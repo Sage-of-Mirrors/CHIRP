@@ -1,9 +1,9 @@
 #include "libchirp-binary/section/ChirpBinaryVat.hpp"
-
 #include "libchirp-binary/util/VertexUtils.hpp"
 
 #include <athena/IStreamReader.hpp>
 #include <athena/IStreamWriter.hpp>
+
 #include <cmath>
 
 namespace chirp::binary {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libchirp-common/ChirpCommon.hpp>
+#include "libchirp-binary/ChirpCommon.hpp"
 
 namespace chirp::binary {
 void Init();

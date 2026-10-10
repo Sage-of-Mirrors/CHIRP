@@ -1,5 +1,4 @@
 #include "libchirp-binary/libchirp-binary.hpp"
-
 #include "libchirp-binary/ChirpBinarySectionManager.hpp"
 #include "libchirp-binary/section/ChirpBinaryGeo.hpp"
 #include "libchirp-binary/section/ChirpBinaryMat.hpp"

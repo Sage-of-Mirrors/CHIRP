@@ -2,6 +2,7 @@
 
 #include <athena/IStreamReader.hpp>
 #include <athena/IStreamWriter.hpp>
+
 #include <cmath>
 
 namespace chirp::binary {

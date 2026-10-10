@@ -1,5 +1,7 @@
 #pragma once
-#include "libchirp-common/ChirpErrorSource.hpp"
+
+#include "libchirp-binary/ChirpErrorSource.hpp"
+
 #include <string>
 #include <vector>
 
@@ -20,9 +22,9 @@ public:
   void Note(ChirpSourceSpan span, std::string message);
 
   [[nodiscard]] bool HasErrors() const;
-  [[nodiscard]] const std::vector<ChirpDiagnostic>& AllDiagnostics() const;
+  [[nodiscard]] const std::vector< ChirpDiagnostic >& AllDiagnostics() const;
 
 private:
-  std::vector<ChirpDiagnostic> mDiagnostics;
+  std::vector< ChirpDiagnostic > mDiagnostics;
 };
 } // namespace chirp

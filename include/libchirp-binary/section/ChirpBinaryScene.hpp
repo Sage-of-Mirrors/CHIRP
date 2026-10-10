@@ -1,10 +1,8 @@
 #pragma once
 
-#include <libchirp-common/ChirpCommon.hpp>
-
+#include "libchirp-binary/ChirpCommon.hpp"
+#include "libchirp-binary/math/ChirpTransform.hpp"
 #include "libchirp-binary/section/ChirpBinarySection.hpp"
-
-#include <libchirp-common/math/ChirpTransform.hpp>
 
 #include <map>
 

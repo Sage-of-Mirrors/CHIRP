@@ -1,10 +1,8 @@
 #pragma once
 
-#include <libchirp-common/ChirpCommon.hpp>
-
+#include "libchirp-binary/ChirpCommon.hpp"
+#include "libchirp-binary/gx/Material.hpp"
 #include "libchirp-binary/section/ChirpBinarySection.hpp"
-
-#include <libchirp-common/gx/Material.hpp>
 
 namespace chirp::binary {
 class ChirpBinaryMaterials : public ChirpBinarySection {

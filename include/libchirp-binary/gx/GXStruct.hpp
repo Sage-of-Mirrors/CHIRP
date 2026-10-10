@@ -1,9 +1,8 @@
 #pragma once
 
-#include "libchirp-common/ChirpCommon.hpp"
-
-#include "libchirp-common/gx/GXEnum.hpp"
-#include "libchirp-common/math/ChirpColor.hpp"
+#include "libchirp-binary/ChirpCommon.hpp"
+#include "libchirp-binary/gx/GXEnum.hpp"
+#include "libchirp-binary/math/ChirpColor.hpp"
 
 namespace chirp::gx {
 struct ColorCombiner {

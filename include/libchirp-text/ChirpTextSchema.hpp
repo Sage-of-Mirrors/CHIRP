@@ -1,5 +1,5 @@
 #pragma once
-#include "libchirp-common/ChirpDiagnostic.hpp"
+#include "libchirp-binary/ChirpDiagnostic.hpp"
 #include "libchirp-text/ChirpTextDocument.hpp"
 
 namespace chirp::text {

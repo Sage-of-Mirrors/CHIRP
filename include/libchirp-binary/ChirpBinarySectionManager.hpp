@@ -1,5 +1,6 @@
 #pragma once
-#include "libchirp-common/ChirpCommon.hpp"
+
+#include "libchirp-binary/ChirpCommon.hpp"
 
 #include <functional>
 #include <map>

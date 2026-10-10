@@ -1,5 +1,5 @@
 #pragma once
-#include "libchirp-common/ChirpErrorSource.hpp"
+#include "libchirp-binary/ChirpErrorSource.hpp"
 #include <string>
 namespace chirp::text {
 enum class ChirpTextTokenKind {
