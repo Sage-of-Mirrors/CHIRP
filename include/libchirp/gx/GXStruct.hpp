@@ -46,16 +46,16 @@ struct TevStage {
 };
 
 struct AlphaCompare {
-  Compare m_compA;
-  u8 m_refA;
-  AlphaOp m_op;
-  Compare m_compB;
-  u8 m_refB;
+  Compare m_compA{Compare::Never};
+  u8 m_refA{0};
+  AlphaOp m_op{AlphaOp::And};
+  Compare m_compB{Compare::Never};
+  u8 m_refB{0};
 };
 
 struct TevSwapMode {
-  TevSwapSel m_rasterSel;
-  TevSwapSel m_textureSel;
+  TevSwapSel m_rasterSel{TevSwapSel::SwapSel_0};
+  TevSwapSel m_textureSel{TevSwapSel::SwapSel_0};
 };
 
 struct TevSwapModeTable {
@@ -67,28 +67,28 @@ struct TevSwapModeTable {
 };
 
 struct BlendMode {
-  BlendType m_type;
-  BlendFactor m_srcFactor;
-  BlendFactor m_dstFactor;
-  LogicOp m_op;
+  BlendType m_type{BlendType::None};
+  BlendFactor m_srcFactor{BlendFactor::Zero};
+  BlendFactor m_dstFactor{BlendFactor::Zero};
+  LogicOp m_op{LogicOp::Clear};
 };
 
 struct FogRangeAdj {
-  bool m_enabled;
-  u16 m_center;
+  bool m_enabled{false};
+  u16 m_center{0};
 
-  std::array< u16, 10 > m_adjTable;
+  std::array< u16, 10 > m_adjTable{};
 };
 
 struct Fog {
-  FogType m_type;
-  f32 m_startZ;
-  f32 m_endZ;
-  f32 m_nearZ;
-  f32 m_farZ;
+  FogType m_type{FogType::None};
+  f32 m_startZ{0.0f};
+  f32 m_endZ{0.0f};
+  f32 m_nearZ{0.0f};
+  f32 m_farZ{0.0f};
 
-  math::ChirpColor m_color;
-  FogRangeAdj m_rangeAdjust;
+  math::ChirpColor m_color{};
+  FogRangeAdj m_rangeAdjust{};
 };
 
 struct ZMode {
