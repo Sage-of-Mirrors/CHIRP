@@ -1,4 +1,5 @@
 #include "libchirp/section/ChirpBinaryMat.hpp"
+#include "libchirp/math/ChirpColor.hpp"
 
 #include <athena/IStreamReader.hpp>
 #include <athena/IStreamWriter.hpp>
@@ -22,6 +23,9 @@ struct MaterialData {
   /*0x18*/ u32 m_fogOffset;
   /*0x1C*/ u32 m_indirectStagesOffset;
   /*0x20*/ u32 m_zModeOffset;
+  /*0x24*/ u32 m_konstSelsOffset;
+  /*0x28*/ u32 m_tevColorsOffset;
+  /*0x2C*/ u32 m_konstColorsOffset;
 };
 
 void ReadMaterialData(SectionReader& sectionReader, MaterialData& outData) {
@@ -39,6 +43,9 @@ void ReadMaterialData(SectionReader& sectionReader, MaterialData& outData) {
   outData.m_fogOffset = sectionReader.readUint32();
   outData.m_indirectStagesOffset = sectionReader.readUint32();
   outData.m_zModeOffset = sectionReader.readUint32();
+  outData.m_konstSelsOffset = sectionReader.readUint32();
+  outData.m_tevColorsOffset = sectionReader.readUint32();
+  outData.m_konstColorsOffset = sectionReader.readUint32();
 }
 
 void ReadAlphaCompare(SectionReader& sectionReader, AlphaCompare& outAlphaComp) {
@@ -172,6 +179,9 @@ void ChirpBinaryMaterials::ReadOffsets(SectionReader& sectionReader) {
   m_stagesOffset = sectionReader.readUint32();         // 0x20
   m_indirectStagesOffset = sectionReader.readUint32(); // 0x24
   m_zmodesOffset = sectionReader.readUint32();         // 0x28
+  m_konstSelsOffset = sectionReader.readUint32();      // 0x2C
+  m_tevColorsOffset = sectionReader.readUint32();      // 0x30
+  m_konstColorsOffset = sectionReader.readUint32();    // 0x34
 
   sectionReader.seekAlign16();
 }
@@ -198,6 +208,29 @@ void ChirpBinaryMaterials::ReadMaterial(SectionReader& sectionReader) {
   // Z-mode.
   SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::ZModes), rawData.m_zModeOffset);
   ReadZMode(sectionReader, newMaterial->GetZMode());
+
+  // Konst sels.
+  SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::KonstSels), rawData.m_konstSelsOffset);
+  for (u32 k = 0; k < 16; k++) {
+    newMaterial->SetKonstColorSel(k, static_cast< TevKColorSel >(sectionReader.readUByte()));
+    newMaterial->SetKonstAlphaSel(k, static_cast< TevKAlphaSel >(sectionReader.readUByte()));
+  }
+
+  // TEV colors.
+  SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::TevColors), rawData.m_tevColorsOffset);
+  for (u32 t = 0; t < 16; t++) {
+    math::ChirpColor tevColor(sectionReader.readUByte(), sectionReader.readUByte(),
+                              sectionReader.readUByte(), sectionReader.readUByte());
+    newMaterial->SetTevColor(t, tevColor);
+  }
+
+  // Konst colors.
+  SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::KonstColors), rawData.m_konstColorsOffset);
+  for (u32 t = 0; t < 16; t++) {
+    math::ChirpColor konstColor(sectionReader.readUByte(), sectionReader.readUByte(),
+                                sectionReader.readUByte(), sectionReader.readUByte());
+    newMaterial->SetKonstColor(t, konstColor);
+  }
 
   // TEV stages.
   SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Stages), rawData.m_firstStageOffset);
@@ -247,6 +280,15 @@ s64 ChirpBinaryMaterials::SeekToChunk(SectionReader& sectionReader, u8 chunkId, 
     break;
   case ChunkId::ZModes:
     chunkOffset = m_zmodesOffset;
+    break;
+  case ChunkId::KonstSels:
+    chunkOffset = m_konstSelsOffset;
+    break;
+  case ChunkId::TevColors:
+    chunkOffset = m_tevColorsOffset;
+    break;
+  case ChunkId::KonstColors:
+    chunkOffset = m_konstColorsOffset;
     break;
   default:
     break;

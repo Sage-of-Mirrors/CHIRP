@@ -41,7 +41,10 @@ private:
     IndirectStages,
     MaterialNames,
     Stages,
-    ZModes
+    ZModes,
+    KonstSels,
+    TevColors,
+    KonstColors
   };
 
   void ReadOffsets(SectionReader& sectionReader);
@@ -54,6 +57,9 @@ private:
   u32 m_materialNamesOffset{0};
   u32 m_stagesOffset{0};
   u32 m_zmodesOffset{0};
+  u32 m_konstSelsOffset{0};
+  u32 m_tevColorsOffset{0};
+  u32 m_konstColorsOffset{0};
 
   ChirpMaterialMap m_materials;
 };

@@ -68,6 +68,54 @@ public:
   Fog& GetFog() { return m_fog; }
   ZMode& GetZMode() { return m_zMode; }
 
+  math::ChirpColor GetTevColor(u32 idx) const {
+    return idx < 16 ? m_tevColors[idx] : math::ChirpColor();
+  }
+
+  math::ChirpColor GetKonstColor(u32 idx) const {
+    return idx < 16 ? m_konstColors[idx] : math::ChirpColor();
+  }
+
+  void SetTevColor(u32 idx, const math::ChirpColor& color) {
+    if (idx >= 16) {
+      return;
+    }
+
+    m_tevColors[idx] = color;
+  }
+
+  void SetKonstColor(u32 idx, const math::ChirpColor& color) {
+    if (idx >= 16) {
+      return;
+    }
+
+    m_konstColors[idx] = color;
+  }
+
+  TevKColorSel GetKonstColorSel(u32 idx) const {
+    return idx < 16 ? m_konstColorSels[idx] : TevKColorSel::KColorSel_8_8;
+  }
+
+  TevKAlphaSel GetKonstAlphaSel(u32 idx) const {
+    return idx < 16 ? m_konstAlphaSels[idx] : TevKAlphaSel::KAlphaSel_1;
+  }
+
+  void SetKonstColorSel(u32 idx, TevKColorSel sel) {
+    if (idx >= 16) {
+      return;
+    }
+
+    m_konstColorSels[idx] = sel;
+  }
+
+  void SetKonstAlphaSel(u32 idx, TevKAlphaSel sel) {
+    if (idx >= 16) {
+      return;
+    }
+
+    m_konstAlphaSels[idx] = sel;
+  }
+
 private:
   std::string m_name;
 
