@@ -3,6 +3,7 @@
 #include "libchirp/section/ChirpBinaryGeo.hpp"
 #include "libchirp/section/ChirpBinaryMat.hpp"
 #include "libchirp/section/ChirpBinaryScene.hpp"
+#include "libchirp/section/ChirpBinaryUserdata.hpp"
 #include "libchirp/section/ChirpBinaryVat.hpp"
 
 void chirp::Init() {
@@ -16,4 +17,6 @@ void chirp::Init() {
                              binary::ChirpBinaryScene::CreateSCNSectionWithOffset);
   sectionMgr.RegisterSection(FourCC("CMAT"), binary::ChirpBinaryMaterials::CreateMATSection,
                              binary::ChirpBinaryMaterials::CreateMATSectionWithOffset);
+  sectionMgr.RegisterSection(FourCC("CUSR"), binary::ChirpBinaryUserdata::CreateUSRSection,
+                             binary::ChirpBinaryUserdata::CreateUSRSectionWithOffset);
 }
