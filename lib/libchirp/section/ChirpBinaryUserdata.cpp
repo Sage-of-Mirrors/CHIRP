@@ -3,7 +3,7 @@
 #include <athena/IStreamWriter.hpp>
 
 namespace chirp::binary {
-const std::optional< ChirpKeyValue > ChirpKeyValue::GetTupleValue(std::string_view key) const {
+std::optional< const ChirpKeyValue > ChirpKeyValue::GetTupleValue(std::string_view key) const {
   const ChirpKeyValueTuple* tupleVal = std::get_if< ChirpKeyValueTuple >(&m_value);
   if (!tupleVal) {
     return std::nullopt;
@@ -12,14 +12,17 @@ const std::optional< ChirpKeyValue > ChirpKeyValue::GetTupleValue(std::string_vi
   auto findTupleKeyFunc = [key](const ChirpKeyValue& value) { return value.GetKey() == key; };
 
   auto findResult = std::find_if(tupleVal->begin(), tupleVal->end(), findTupleKeyFunc);
-  return findResult != tupleVal->end() ? std::make_optional<ChirpKeyValue>(*findResult) : std::nullopt;
+  return findResult != tupleVal->end() ? std::make_optional< ChirpKeyValue >(*findResult)
+                                       : std::make_optional< ChirpKeyValue >();
 }
 
-const std::optional< ChirpKeyValue > ChirpKeyValue::operator[](std::string_view key) const {
+std::optional< const ChirpKeyValue > ChirpKeyValue::operator[](std::string_view key) const {
   return GetTupleValue(key);
 }
 
-const ChirpKeyValue* ChirpUserData::operator[](std::string_view key) const { return nullptr; }
+std::optional< const ChirpKeyValue > ChirpUserData::operator[](std::string_view key) const {
+  return std::make_optional< ChirpKeyValue >();
+}
 
 ChirpBinaryUserdata::ChirpBinaryUserdata() : ChirpBinarySection() {}
 ChirpBinaryUserdata::ChirpBinaryUserdata(u32 size, u32 elementCount, u16 versionMajor,

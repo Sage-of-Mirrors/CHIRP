@@ -9,8 +9,8 @@ namespace chirp::binary {
 class ChirpKeyValue {
 public:
   using ChirpKeyValueTuple = std::vector< ChirpKeyValue >;
-  using ChirpUserValue =
-      std::variant< std::nullptr_t, bool, s64, double, std::string, ChirpKeyValueTuple >;
+  using ChirpUserValue = std::variant< std::nullptr_t, bool, s64, double, std::string,
+                                       ChirpKeyValueTuple, ChirpKeyValue* >;
 
   ChirpKeyValue() : m_value(nullptr) {}
 
@@ -21,13 +21,13 @@ public:
   const ChirpUserValue& GetValue() const { return m_value; }
 
   template < typename T >
-  const std::optional< T > GetValueAs() {
-    return std::holds_alternative< T >(m_value) ? std::make_optional< T >(std::get< T >(m_value))
+  std::optional< const T > GetValueAs() const {
+    return std::holds_alternative< T >(m_value) ? std::optional< T >(std::get< T >(m_value))
                                                 : std::nullopt;
   }
 
-  const std::optional< ChirpKeyValue > GetTupleValue(std::string_view key) const;
-  const std::optional< ChirpKeyValue > operator[](std::string_view key) const;
+  std::optional< const ChirpKeyValue > GetTupleValue(std::string_view key) const;
+  std::optional< const ChirpKeyValue > operator[](std::string_view key) const;
 
 private:
   std::string m_key;
@@ -37,6 +37,7 @@ private:
 class ChirpUserData {
 public:
   ChirpUserData() {}
+  ChirpUserData(std::string_view namesp) : m_namespace(namesp) {}
 
   std::string GetNamespace() const { return m_namespace; }
   std::unordered_map< std::string, ChirpKeyValue >& GetFields() { return m_fields; }
@@ -48,12 +49,26 @@ public:
   }
 
   template < typename T >
-  const T* GetFieldAs(std::string_view key) const {
+  const T GetFieldAs(std::string_view key) const {
     std::string keyAsStr(key);
-    return m_fields.contains(keyAsStr) ? m_fields.at(keyAsStr).GetValueAs< T >() : nullptr;
+    if (!m_fields.contains(keyAsStr)) {
+      return T();
+    }
+
+    return m_fields.at(keyAsStr).GetValueAs< T >().value_or(T());
   }
 
-  const ChirpKeyValue* operator[](std::string_view key) const;
+  bool AddField(std::string_view key, ChirpKeyValue&& value) {
+    std::string keyAsStr(key);
+    if (m_fields.contains(keyAsStr)) {
+      return false;
+    }
+
+    m_fields[keyAsStr] = std::move(value);
+    return true;
+  }
+
+  std::optional< const ChirpKeyValue > operator[](std::string_view key) const;
 
 private:
   std::string m_namespace;
@@ -70,6 +85,8 @@ public:
   bool Import(SectionReader& inStream) override;
   bool Export(athena::io::IStreamWriter& outStream) override;
 
+  ChirpUserData* GetUserData() const { return m_userData.get(); }
+
   static std::unique_ptr< ChirpBinarySection > CreateUSRSection(u32 size, u32 elementCount,
                                                                 u16 versionMajor, u16 versionMinor);
   static std::unique_ptr< ChirpBinarySection > CreateUSRSectionWithOffset(u64 offset, u32 size,
@@ -82,5 +99,8 @@ protected:
 
 private:
   enum class ChunkId : u8 { Attributes };
+  enum class KeyValueType : u16 { Null, Bool, S64, Double, String, Tuple };
+
+  std::unique_ptr< ChirpUserData > m_userData;
 };
 } // namespace chirp::binary
