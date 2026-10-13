@@ -434,4 +434,34 @@ enum class TexCoordId : u8 {
   TexCoord_Max,
   TexCoord_Null = 0xFF
 };
+
+enum class TexWrapMode : u8 {
+  Clamp,
+  Repeat,
+  Mirror,
+  Max
+};
+
+enum class TexFilter : u8 {
+  Near,
+  Linear,
+  NearMipNear,
+  LinMipNear,
+  NearMipLin,
+  LinMipLin
+};
+
+enum class TexFmt : u8 {
+  I4 = 0x0,
+  I8 = 0x1,
+  IA4 = 0x2,
+  IA8 = 0x3,
+  RGB565 = 0x4,
+  RGB5A3 = 0x5,
+  RGBA8 = 0x6,
+  C4 = 0x8,
+  C8 = 0x9,
+  C14X2 = 0xA,
+  CMPR = 0xE
+};
 } // namespace chirp::gx
