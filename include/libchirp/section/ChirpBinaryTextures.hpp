@@ -22,19 +22,22 @@ public:
   }
 
   gx::ChirpTexture* CreateTexture(std::string_view name, u16 width, u16 height, gx::TexFmt format,
-                                  u16 mipCount = 1, gx::TexWrapMode wrapS = gx::TexWrapMode::Clamp,
+                                  gx::TexFmt paletteFormat = gx::TexFmt::RGBA8, u16 mipCount = 1,
+                                  gx::TexWrapMode wrapS = gx::TexWrapMode::Clamp,
                                   gx::TexWrapMode wrapT = gx::TexWrapMode::Clamp,
                                   gx::TexFilter minFilter = gx::TexFilter::Linear,
                                   gx::TexFilter maxFilter = gx::TexFilter::Linear,
-                                  f32 minLod = 0.0f, f32 maxLod = 0.0f, f32 lodBias = 0.0f) {
+                                  gx::Anisotropy aniso = gx::Anisotropy::Aniso_1, f32 minLod = 0.0f,
+                                  f32 maxLod = 0.0f, f32 lodBias = 0.0f, bool biasClamp = false,
+                                  bool edgeLod = false) {
     std::string nameAsStr(name);
     if (m_textures.contains(nameAsStr)) {
       return nullptr;
     }
 
-    m_textures[nameAsStr] =
-        std::make_unique< gx::ChirpTexture >(name, width, height, format, mipCount, wrapS, wrapT,
-                                             minFilter, maxFilter, minLod, maxLod, lodBias);
+    m_textures[nameAsStr] = std::make_unique< gx::ChirpTexture >(
+        name, width, height, format, paletteFormat, mipCount, wrapS, wrapT, minFilter, maxFilter,
+        aniso, minLod, maxLod, lodBias, biasClamp, edgeLod);
     return m_textures[nameAsStr].get();
   }
 
@@ -49,9 +52,10 @@ protected:
   s64 SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset = 0) override;
 
 private:
-  enum class ChunkId : u8 { ImageData, TextureNames };
+  enum class ChunkId : u8 { ImageData, PaletteData, TextureNames };
 
   u32 m_imageDataOffset{0};
+  u32 m_paletteDataOffset{0};
   u32 m_textureNamesOffset{0};
 
   std::unordered_map< std::string, std::unique_ptr< gx::ChirpTexture > > m_textures;

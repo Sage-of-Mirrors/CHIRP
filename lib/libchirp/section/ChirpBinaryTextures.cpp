@@ -14,6 +14,7 @@ ChirpBinaryTextures::ChirpBinaryTextures(u64 offset, u32 size, u32 elementCount,
 
 bool ChirpBinaryTextures::Import(SectionReader& inStream) {
   m_imageDataOffset = inStream.readUint32();
+  m_paletteDataOffset = inStream.readUint32();
   m_textureNamesOffset = inStream.readUint32();
   inStream.seekAlign16();
 
@@ -21,32 +22,50 @@ bool ChirpBinaryTextures::Import(SectionReader& inStream) {
     u16 nameSize = inStream.readUint16();
     u16 width = inStream.readUint16();
     u16 height = inStream.readUint16();
-    gx::TexFmt format = static_cast< gx::TexFmt >(inStream.readUByte());
-    u8 mipCount = inStream.readUByte();
+    u16 mipCount = inStream.readUint16();
+    u16 paletteCount = inStream.readUint16();
 
+    gx::TexFmt format = static_cast< gx::TexFmt >(inStream.readUByte());
     gx::TexWrapMode wrapS = static_cast< gx::TexWrapMode >(inStream.readUByte());
     gx::TexWrapMode wrapT = static_cast< gx::TexWrapMode >(inStream.readUByte());
     gx::TexFilter minFilter = static_cast< gx::TexFilter >(inStream.readUByte());
     gx::TexFilter magFilter = static_cast< gx::TexFilter >(inStream.readUByte());
+    gx::Anisotropy aniso = static_cast< gx::Anisotropy >(inStream.readUByte());
+
     f32 minLod = inStream.readFloat();
     f32 maxLod = inStream.readFloat();
     f32 lodBias = inStream.readFloat();
+    bool biasClamp = inStream.readBool();
+    bool edgeLod = inStream.readBool();
+    gx::TexFmt paletteFormat = static_cast< gx::TexFmt >(inStream.readUByte());
+    inStream.seekAlign4();
 
     u32 nameOffset = inStream.readUint32();
+    u32 paletteOffset = inStream.readUint32();
     u32 dataSize = inStream.readUint32();
     u32 dataOffset = inStream.readUint32();
 
     s64 nextTexPos = SeekToChunk(inStream, static_cast< u8 >(ChunkId::TextureNames), nameOffset);
 
-    gx::ChirpTexture* newTex =
-        CreateTexture(inStream.readString(nameSize), width, height, format, mipCount, wrapS, wrapT,
-                      minFilter, magFilter, minLod, maxLod, lodBias);
+    gx::ChirpTexture* newTex = CreateTexture(
+        inStream.readString(nameSize), width, height, format, paletteFormat, mipCount, wrapS, wrapT,
+        minFilter, magFilter, aniso, minLod, maxLod, lodBias, biasClamp, edgeLod);
 
     SeekToChunk(inStream, static_cast< u8 >(ChunkId::ImageData), dataOffset);
 
     auto& imgData = newTex->GetImageData();
     imgData.resize(dataSize);
     inStream.readUBytesToBuf(imgData.data(), dataSize);
+
+    if (paletteCount) {
+      SeekToChunk(inStream, static_cast< u8 >(ChunkId::PaletteData), paletteOffset);
+
+      auto& paletteData = newTex->GetPaletteData();
+      for (u32 c = 0; c < paletteCount; c++) {
+        paletteData.emplace_back(inStream.readUByte(), inStream.readUByte(), inStream.readUByte(),
+                                 inStream.readUByte());
+      }
+    }
 
     inStream.seek(nextTexPos, athena::SeekOrigin::Begin);
   }
@@ -63,6 +82,9 @@ s64 ChirpBinaryTextures::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u
   switch (chunk) {
   case ChunkId::ImageData:
     chunkOffset = m_imageDataOffset;
+    break;
+  case ChunkId::PaletteData:
+    chunkOffset = m_paletteDataOffset;
     break;
   case ChunkId::TextureNames:
     chunkOffset = m_textureNamesOffset;

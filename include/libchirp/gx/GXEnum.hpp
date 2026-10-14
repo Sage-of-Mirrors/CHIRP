@@ -435,21 +435,9 @@ enum class TexCoordId : u8 {
   TexCoord_Null = 0xFF
 };
 
-enum class TexWrapMode : u8 {
-  Clamp,
-  Repeat,
-  Mirror,
-  Max
-};
+enum class TexWrapMode : u8 { Clamp, Repeat, Mirror, Max };
 
-enum class TexFilter : u8 {
-  Near,
-  Linear,
-  NearMipNear,
-  LinMipNear,
-  NearMipLin,
-  LinMipLin
-};
+enum class TexFilter : u8 { Near, Linear, NearMipNear, LinMipNear, NearMipLin, LinMipLin };
 
 enum class TexFmt : u8 {
   I4 = 0x0,
@@ -463,5 +451,12 @@ enum class TexFmt : u8 {
   C8 = 0x9,
   C14X2 = 0xA,
   CMPR = 0xE
+};
+
+enum class Anisotropy {
+  Aniso_1,
+  Aniso_2,
+  Aniso_4,
+  Aniso_Max,
 };
 } // namespace chirp::gx
