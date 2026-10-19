@@ -14,7 +14,8 @@ using ChirpUserValue =
 
 class ChirpKeyValue {
 public:
-  ChirpKeyValue(std::string_view key) : m_key(key) {}
+  ChirpKeyValue(std::string_view key) : m_key(key), m_value(nullptr) {}
+  ChirpKeyValue() : m_key(""), m_value(nullptr) {}
 
   std::string GetKey() const { return m_key; }
   const ChirpUserValue& GetValue() const { return m_value; }
@@ -135,6 +136,9 @@ private:
   enum class ValueType : u8 { Null, Bool, S64, Double, String, Tuple };
 
   void ReadOffsets(SectionReader& sectionReader);
+  void ReadUserData(SectionReader& sectionReader, ChirpUserData* parentUserData);
+  void ReadKeyValue(SectionReader& sectionReader, ChirpUserData* ownerUserData);
+  void ReadTuples(SectionReader& sectionReader, ChirpKeyValue* parentKeyValue, u16 count);
 
   u32 m_keyValuesOffset{0};
   u32 m_boolsOffset{0};

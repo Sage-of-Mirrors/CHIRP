@@ -110,53 +110,7 @@ bool ChirpBinaryUserdata::Import(SectionReader& inStream) {
   ReadOffsets(inStream);
 
   for (u32 i = 0; i < m_elementCount; i++) {
-    UserDataInfo userDataInfo;
-    ReadUserDataInfo(inStream, userDataInfo);
-
-    s64 returnPos =
-        SeekToChunk(inStream, static_cast< u8 >(ChunkId::Strings), userDataInfo.m_nameOffset);
-    ChirpUserData* newUserData = CreateUserData(inStream.readString(userDataInfo.m_nameSize));
-
-    SeekToChunk(inStream, static_cast< u8 >(ChunkId::KeyValues), userDataInfo.m_firstFieldOffset);
-    for (u32 f = 0; f < userDataInfo.m_fieldCount; f++) {
-      KeyValueInfo keyValueInfo;
-      ReadKeyValueInfo(inStream, keyValueInfo);
-
-      s64 nextKeyPos =
-          SeekToChunk(inStream, static_cast< u8 >(ChunkId::Strings), keyValueInfo.m_keyOffset);
-      ChirpKeyValue* newKeyValue =
-          newUserData->CreateField(inStream.readString(keyValueInfo.m_keySize));
-
-      switch (static_cast< ValueType >(keyValueInfo.m_type)) {
-      case ValueType::Bool:
-        SeekToChunk(inStream, static_cast< u8 >(ChunkId::Bools), keyValueInfo.m_valueOffset);
-        newKeyValue->SetValue< bool >(inStream.readBool());
-        break;
-      case ValueType::S64:
-        SeekToChunk(inStream, static_cast< u8 >(ChunkId::S64s), keyValueInfo.m_valueOffset);
-        newKeyValue->SetValue< s64 >(inStream.readInt64());
-        break;
-      case ValueType::Double:
-        SeekToChunk(inStream, static_cast< u8 >(ChunkId::Doubles), keyValueInfo.m_valueOffset);
-        newKeyValue->SetValue< double >(inStream.readDouble());
-        break;
-      case ValueType::String:
-        SeekToChunk(inStream, static_cast< u8 >(ChunkId::Strings), keyValueInfo.m_valueOffset);
-        newKeyValue->SetValue< std::string >(
-            inStream.readString(keyValueInfo.m_tupleCountStringSize));
-        break;
-      case ValueType::Tuple:
-        // TODO
-        break;
-      case ValueType::Null:
-      default:
-        break;
-      }
-
-      inStream.seek(nextKeyPos, athena::SeekOrigin::Begin);
-    }
-
-    inStream.seek(returnPos, athena::SeekOrigin::Begin);
+    ReadUserData(inStream, nullptr);
   }
 
   return true;
@@ -206,6 +160,115 @@ void ChirpBinaryUserdata::ReadOffsets(SectionReader& sectionReader) {
   m_tuplesOffset = sectionReader.readUint32();
 
   sectionReader.seekAlign16();
+}
+
+void ChirpBinaryUserdata::ReadUserData(SectionReader& sectionReader,
+                                       ChirpUserData* parentUserData) {
+  UserDataInfo userDataInfo;
+  ReadUserDataInfo(sectionReader, userDataInfo);
+
+  s64 returnPos =
+      SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Strings), userDataInfo.m_nameOffset);
+  std::string name = sectionReader.readString(userDataInfo.m_nameSize);
+  ChirpUserData* newUserData =
+      parentUserData ? parentUserData->CreateChild(name) : CreateUserData(name);
+
+  SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::KeyValues),
+              userDataInfo.m_firstFieldOffset);
+  for (u32 f = 0; f < userDataInfo.m_fieldCount; f++) {
+    ReadKeyValue(sectionReader, newUserData);
+  }
+
+  sectionReader.seek(returnPos, athena::SeekOrigin::Begin);
+
+  for (u32 c = 0; c < userDataInfo.m_childCount; c++) {
+    ReadUserData(sectionReader, newUserData);
+  }
+}
+
+void ChirpBinaryUserdata::ReadKeyValue(SectionReader& sectionReader, ChirpUserData* ownerUserData) {
+  KeyValueInfo keyValueInfo;
+  ReadKeyValueInfo(sectionReader, keyValueInfo);
+
+  s64 nextKeyPos =
+      SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Strings), keyValueInfo.m_keyOffset);
+  ChirpKeyValue* newKeyValue =
+      ownerUserData->CreateField(sectionReader.readString(keyValueInfo.m_keySize));
+
+  switch (static_cast< ValueType >(keyValueInfo.m_type)) {
+  case ValueType::Bool:
+    SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Bools), keyValueInfo.m_valueOffset);
+    newKeyValue->SetValue< bool >(sectionReader.readBool());
+    break;
+  case ValueType::S64:
+    SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::S64s), keyValueInfo.m_valueOffset);
+    newKeyValue->SetValue< s64 >(sectionReader.readInt64());
+    break;
+  case ValueType::Double:
+    SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Doubles), keyValueInfo.m_valueOffset);
+    newKeyValue->SetValue< double >(sectionReader.readDouble());
+    break;
+  case ValueType::String:
+    SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Strings), keyValueInfo.m_valueOffset);
+    newKeyValue->SetValue< std::string >(
+        sectionReader.readString(keyValueInfo.m_tupleCountStringSize));
+    break;
+  case ValueType::Tuple:
+    SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::KeyValues), keyValueInfo.m_valueOffset);
+    ReadTuples(sectionReader, newKeyValue, keyValueInfo.m_tupleCountStringSize);
+    break;
+  case ValueType::Null:
+  default:
+    break;
+  }
+
+  sectionReader.seek(nextKeyPos, athena::SeekOrigin::Begin);
+}
+
+void ChirpBinaryUserdata::ReadTuples(SectionReader& sectionReader, ChirpKeyValue* parentKeyValue,
+                                     u16 count) {
+  ChirpUserTuple tuples;
+
+  for (u32 t = 0; t < count; t++) {
+    KeyValueInfo keyValueInfo;
+    ReadKeyValueInfo(sectionReader, keyValueInfo);
+
+    s64 nextKeyPos =
+        SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Strings), keyValueInfo.m_keyOffset);
+    std::string name = sectionReader.readString(keyValueInfo.m_keySize);
+    tuples[name] = ChirpKeyValue(name);
+
+    switch (static_cast< ValueType >(keyValueInfo.m_type)) {
+    case ValueType::Bool:
+      SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Bools), keyValueInfo.m_valueOffset);
+      tuples[name].SetValue< bool >(sectionReader.readBool());
+      break;
+    case ValueType::S64:
+      SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::S64s), keyValueInfo.m_valueOffset);
+      tuples[name].SetValue< s64 >(sectionReader.readInt64());
+      break;
+    case ValueType::Double:
+      SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Doubles), keyValueInfo.m_valueOffset);
+      tuples[name].SetValue< double >(sectionReader.readDouble());
+      break;
+    case ValueType::String:
+      SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Strings), keyValueInfo.m_valueOffset);
+      tuples[name].SetValue< std::string >(
+          sectionReader.readString(keyValueInfo.m_tupleCountStringSize));
+      break;
+    case ValueType::Tuple:
+      SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::KeyValues), keyValueInfo.m_valueOffset);
+      ReadTuples(sectionReader, &tuples[name], keyValueInfo.m_tupleCountStringSize);
+      break;
+    case ValueType::Null:
+    default:
+      break;
+    }
+
+    sectionReader.seek(nextKeyPos, athena::SeekOrigin::Begin);
+  }
+
+  parentKeyValue->SetValue(std::move(tuples));
 }
 
 std::unique_ptr< ChirpBinarySection > ChirpBinaryUserdata::CreateUSRSection(const u32 size,
