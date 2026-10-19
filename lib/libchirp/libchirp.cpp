@@ -3,6 +3,7 @@
 #include "libchirp/section/ChirpBinaryGeo.hpp"
 #include "libchirp/section/ChirpBinaryMat.hpp"
 #include "libchirp/section/ChirpBinaryScene.hpp"
+#include "libchirp/section/ChirpBinarySkin.hpp"
 #include "libchirp/section/ChirpBinaryTextures.hpp"
 #include "libchirp/section/ChirpBinaryUserdata.hpp"
 #include "libchirp/section/ChirpBinaryVat.hpp"
@@ -22,4 +23,6 @@ void chirp::Init() {
                              binary::ChirpBinaryUserdata::CreateUSRSectionWithOffset);
   sectionMgr.RegisterSection(FourCC("CTEX"), binary::ChirpBinaryTextures::CreateTEXSection,
                              binary::ChirpBinaryTextures::CreateTEXSectionWithOffset);
+  sectionMgr.RegisterSection(FourCC("CSKN"), binary::ChirpBinarySkin::CreateSKNSection,
+                             binary::ChirpBinarySkin::CreateSKNSectionWithOffset);
 }
