@@ -1,6 +1,7 @@
 #pragma once
 
 #include "libchirp/ChirpCommon.hpp"
+#include "libchirp/math/ChirpVector.hpp"
 
 #include <athena/IStreamReader.hpp>
 #include <athena/IStreamWriter.hpp>
@@ -65,22 +66,22 @@ private:
   u64 m_sectionEnd;
 };
 
-class SectionWriter : athena::io::IStreamWriter {
+class SectionWriter : public athena::io::IStreamWriter {
 public:
-  SectionWriter(athena::io::IStreamWriter& outStream, u64 start, u64 end)
+  SectionWriter(athena::io::IStreamWriter& outStream, u64 start)
   : m_outStream(outStream), m_sectionStart(start) {
     setEndian(athena::Endian::Little);
   }
 
   u64 position() const override { return m_outStream.position(); }
   u64 length() const override { return m_outStream.length(); }
+  u64 sectionLength() const { return length() - m_sectionStart; }
   void seek(s64 offset, athena::SeekOrigin origin = athena::SeekOrigin::Current) override {
-    const s64 curLength = length();
-    const s64 base = origin == athena::SeekOrigin::Begin ? 0
-                     : origin == athena::SeekOrigin::End ? static_cast< s64 >(curLength)
+    const s64 base = origin == athena::SeekOrigin::Begin ? m_sectionStart
+                     : origin == athena::SeekOrigin::End ? static_cast< s64 >(length())
                                                          : static_cast< s64 >(position());
     if (offset < static_cast< s64 >(m_sectionStart) - base ||
-        offset > static_cast< s64 >(curLength) - base) {
+        offset > static_cast< s64 >(length()) - base) {
       setError();
       return;
     }
@@ -99,9 +100,22 @@ public:
   void writeAlign16() { writeZeroTo(ROUND_UP_16(position())); }
 
   void writeOffset(s64 pos) {
-    s64 curPos = position();
-    seek(m_sectionStart + pos, athena::SeekOrigin::Begin);
-    writeUint32(static_cast< u32 >(curPos));
+    seek(pos, athena::SeekOrigin::Begin);
+    writeUint32(static_cast< u32 >(sectionLength()));
+    seek(0, athena::SeekOrigin::End);
+  }
+
+  void writeSectionSize() {
+    seek(0x08, athena::SeekOrigin::Begin);
+    writeUint32(static_cast< u32 >(sectionLength()));
+    seek(0, athena::SeekOrigin::End);
+  }
+
+  void writeVector4(const math::ChirpVector4& vec4) {
+    writeFloat(vec4.X());
+    writeFloat(vec4.Y());
+    writeFloat(vec4.Z());
+    writeFloat(vec4.W());
   }
 
 private:

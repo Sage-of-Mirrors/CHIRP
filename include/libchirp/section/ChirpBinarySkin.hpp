@@ -97,6 +97,10 @@ protected:
   s64 SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset = 0) override;
 
 private:
+  static constexpr u32 kIndicesOffsetPos{0x14};
+  static constexpr u32 kWeightsOffsetPos{0x18};
+  static constexpr u32 kMatricesOffsetPos{0x1C};
+
   enum class ChunkId : u8 { Indices, Weights, Matrices };
 
   u32 m_inverseBindMatrixCount{0};

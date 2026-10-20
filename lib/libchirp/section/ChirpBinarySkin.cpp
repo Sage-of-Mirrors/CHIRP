@@ -1,7 +1,7 @@
 #include "libchirp/section/ChirpBinarySkin.hpp"
 #include "libchirp/math/ChirpVector.hpp"
 
-#include <athena/IStreamWriter.hpp>
+#include <athena/VectorWriter.hpp>
 
 namespace chirp::binary {
 ChirpBinarySkin::ChirpBinarySkin() : ChirpBinarySection() {}
@@ -71,7 +71,63 @@ bool ChirpBinarySkin::Import(SectionReader& sectionReader) {
   return true;
 }
 
-bool ChirpBinarySkin::Export(SectionWriter& outStream) { return true; }
+bool ChirpBinarySkin::Export(SectionWriter& outStream) {
+  // Write section header.
+  outStream.writeUint32(FourCC("CSKN").toUint32());
+  outStream.writeUint16(m_versionMajor);
+  outStream.writeUint16(m_versionMinor);
+  outStream.writeUint32(0); // Placeholder for section size.
+  outStream.writeUint32(static_cast< u32 >(m_bindings.size()));
+  outStream.writeUint32(static_cast< u32 >(m_inverseBindMatrices.size()));
+  outStream.writeUint32(0); // Placeholder for indices offset.
+  outStream.writeUint32(0); // Placeholder for weights offset.
+  outStream.writeUint32(0); // Placeholder for inverse bind matrices offset.
+
+  athena::io::VectorWriter indicesWriter;
+  indicesWriter.setEndian(athena::Endian::Little);
+  athena::io::VectorWriter weightsWriter;
+  weightsWriter.setEndian(athena::Endian::Little);
+
+  // Write binding entries.
+  for (u32 i = 0; i < m_bindings.size(); i++) {
+    ChirpSkinBinding* curBinding = m_bindings[i].get();
+    u16 curBindingCount = curBinding->GetBindingCount();
+
+    outStream.writeUint16(curBindingCount);
+    outStream.writeAlign4();
+    outStream.writeUint32(static_cast< u32 >(indicesWriter.length()));
+    outStream.writeUint32(static_cast< u32 >(weightsWriter.length()));
+
+    ChirpSkinIndices& bindingIndices = curBinding->GetIndices();
+    ChirpSkinWeights& bindingWeights = curBinding->GetWeights();
+    for (u32 b = 0; b < curBindingCount; b++) {
+      indicesWriter.writeUint16(bindingIndices[b]);
+      weightsWriter.writeFloat(bindingWeights[b]);
+    }
+  }
+
+  // Write accumulated indices.
+  outStream.writeAlign16();
+  outStream.writeOffset(kIndicesOffsetPos);
+  outStream.writeUBytes(indicesWriter.data().data(), indicesWriter.length());
+
+  // Write accumulated weights.
+  outStream.writeAlign16();
+  outStream.writeOffset(kWeightsOffsetPos);
+  outStream.writeUBytes(weightsWriter.data().data(), weightsWriter.length());
+
+  // Write inverse bind matrices.
+  outStream.writeAlign16();
+  outStream.writeOffset(kMatricesOffsetPos);
+  for (const math::ChirpMatrix3x4& mtx : m_inverseBindMatrices) {
+    outStream.writeVector4(mtx.GetRow(0));
+    outStream.writeVector4(mtx.GetRow(1));
+    outStream.writeVector4(mtx.GetRow(2));
+  }
+
+  outStream.writeSectionSize();
+  return true;
+}
 
 s64 ChirpBinarySkin::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
   ChunkId chunk = static_cast< ChunkId >(chunkId);

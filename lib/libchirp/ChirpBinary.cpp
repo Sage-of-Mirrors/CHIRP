@@ -5,6 +5,7 @@
 #include <athena/FileWriter.hpp>
 #include <athena/IStreamReader.hpp>
 #include <athena/IStreamWriter.hpp>
+#include <athena/VectorWriter.hpp>
 
 namespace chirp::binary {
 bool ChirpBinary::Import(const std::filesystem::path& inFilepath) {
@@ -15,8 +16,19 @@ bool ChirpBinary::Import(const std::filesystem::path& inFilepath) {
 }
 
 bool ChirpBinary::Export(const std::filesystem::path& outFilepath) {
+  athena::io::VectorWriter bufferStream;
+  bufferStream.setEndian(athena::Endian::Little);
+  bool result = Export(bufferStream);
+
+  if (!result) {
+    return false;
+  }
+
   athena::io::FileWriter outStream(outFilepath.generic_string());
-  return Export(outStream);
+  outStream.setEndian(athena::Endian::Little);
+  outStream.writeUBytes(bufferStream.data().data(), bufferStream.length());
+
+  return true;
 }
 
 bool ChirpBinary::Import(athena::io::IStreamReader& inStream) {
@@ -73,5 +85,24 @@ bool ChirpBinary::Import(athena::io::IStreamReader& inStream) {
   return true;
 }
 
-bool ChirpBinary::Export(athena::io::IStreamWriter& outStream) { return true; }
+bool ChirpBinary::Export(athena::io::IStreamWriter& outStream) {
+  outStream.writeUint32(FourCC("CHRB").toUint32());
+  outStream.writeUint16(m_verMajor);
+  outStream.writeUint16(m_verMinor);
+  outStream.writeUint32(0); // Placeholder for total file size.
+  outStream.writeUint32(static_cast<u32>(m_sections.size()));
+
+  outStream.writeZeroTo(outStream.position() + 0x10);
+
+  for (const auto& s : m_sections) {
+    SectionWriter sectionWriter(outStream, outStream.position());
+    s.second->Export(sectionWriter);
+  }
+
+  outStream.seek(0x8, athena::SeekOrigin::Begin);
+  outStream.writeUint32(static_cast< u32 >(outStream.length()));
+  outStream.seek(0, athena::SeekOrigin::End);
+
+  return true;
+}
 } // namespace chirp::binary

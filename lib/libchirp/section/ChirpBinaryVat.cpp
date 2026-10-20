@@ -1,8 +1,7 @@
 #include "libchirp/section/ChirpBinaryVat.hpp"
 #include "libchirp/util/VertexUtils.hpp"
 
-#include <athena/IStreamReader.hpp>
-#include <athena/IStreamWriter.hpp>
+#include <athena/VectorWriter.hpp>
 
 #include <cmath>
 
@@ -49,7 +48,40 @@ bool ChirpBinaryVat::Import(SectionReader& inStream) {
   return true;
 }
 
-bool ChirpBinaryVat::Export(SectionWriter& outStream) { return true; }
+bool ChirpBinaryVat::Export(SectionWriter& outStream) {
+  // Write section header.
+  outStream.writeUint32(FourCC("CVAT").toUint32());
+  outStream.writeUint16(m_versionMajor);
+  outStream.writeUint16(m_versionMinor);
+  outStream.writeUint32(0); // Placeholder for section size.
+  outStream.writeUint32(static_cast< u32 >(m_attributes.size()));
+  outStream.writeUint32(0); // Placeholder for attributes offset.
+  outStream.writeAlign16();
+
+  athena::io::VectorWriter attributeWriter;
+
+  // Write vertex attributes.
+  for (const auto& v : m_attributes) {
+    outStream.writeUint32(static_cast< u32 >(v.second->GetData().size()));
+    outStream.writeUint32(static_cast< u32 >(attributeWriter.length()));
+    outStream.writeUByte(static_cast< u8 >(v.second->GetAttribute()));
+    outStream.writeUByte(static_cast< u8 >(v.second->GetComponentSize()));
+    outStream.writeUByte(static_cast< u8 >(v.second->GetComponentType()));
+    outStream.writeUByte(static_cast< u8 >(v.second->GetExponent()));
+
+    WriteVertexAttributeData(attributeWriter, v.second.get());
+  }
+
+  // Write attribute data.
+  outStream.writeAlign16();
+  outStream.writeOffset(kAttributesOffsetPos);
+  outStream.writeUBytes(attributeWriter.data().data(), attributeWriter.length());
+
+  outStream.writeAlign16();
+  outStream.writeSectionSize();
+
+  return true;
+}
 
 s64 ChirpBinaryVat::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
   ChunkId chunk = static_cast< ChunkId >(chunkId);
@@ -89,8 +121,17 @@ void ChirpBinaryVat::ReadVertexAttributeData(athena::io::IStreamReader& inStream
   }
 }
 
-void ChirpBinaryVat::WriteVertexAttributeData(athena::io::IStreamWriter& outStream, u32 count,
-                                              ChirpVertexAttribute* attribute) {}
+void ChirpBinaryVat::WriteVertexAttributeData(athena::io::IStreamWriter& outStream,
+                                              ChirpVertexAttribute* attribute) {
+  u32 compSize = util::GetComponentCount(attribute->GetAttribute(), attribute->GetComponentSize());
+
+  std::vector< math::ChirpVector4 >& attrData = attribute->GetData();
+  for (const auto& v : attrData) {
+    for (u32 i = 0; i < compSize; i++) {
+      outStream.writeFloat(v[i]);
+    }
+  }
+}
 
 ChirpVertexAttribute* ChirpBinaryVat::GetVertexAttribute(gx::VtxAttribute attr) {
   if (attr >= gx::VtxAttribute::VtxAttributeMax) {

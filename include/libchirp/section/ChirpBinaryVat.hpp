@@ -72,11 +72,13 @@ protected:
   s64 SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset = 0) override;
 
 private:
+  static constexpr u32 kAttributesOffsetPos{0x10};
+
   enum class ChunkId : u8 { Attributes };
 
   void ReadVertexAttributeData(athena::io::IStreamReader& inStream, u32 count,
                                ChirpVertexAttribute* attribute);
-  void WriteVertexAttributeData(athena::io::IStreamWriter& outStream, u32 count,
+  void WriteVertexAttributeData(athena::io::IStreamWriter& outStream,
                                 ChirpVertexAttribute* attribute);
 
   u32 m_attributesOffset{0};
