@@ -81,6 +81,11 @@ public:
     return m_bindings.back().get();
   }
 
+  math::ChirpMatrix3x4& AddInverseBindMatrix();
+  math::ChirpMatrix3x4& AddInverseBindMatrix(const math::ChirpVector4& r0,
+                                             const math::ChirpVector4& r1,
+                                             const math::ChirpVector4& r2);
+
   static std::unique_ptr< ChirpBinarySection > CreateSKNSection(u32 size, u32 elementCount,
                                                                 u16 versionMajor, u16 versionMinor);
   static std::unique_ptr< ChirpBinarySection > CreateSKNSectionWithOffset(u64 offset, u32 size,
@@ -94,6 +99,7 @@ protected:
 private:
   enum class ChunkId : u8 { Indices, Weights, Matrices };
 
+  u32 m_inverseBindMatrixCount{0};
   u32 m_indicesOffset{0};
   u32 m_weightsOffset{0};
   u32 m_matricesOffset{0};
