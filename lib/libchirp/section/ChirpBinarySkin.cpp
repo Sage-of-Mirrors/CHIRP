@@ -58,23 +58,12 @@ bool ChirpBinarySkin::Import(SectionReader& sectionReader) {
   SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Matrices), 0);
 
   for (u32 i = 0; i < m_inverseBindMatrixCount; i++) {
-    // TODO: Figure out why doing ChirpVector4(readFloat, readFloat, ...) makes the arguments appear
-    // in the incorrect places.
-    math::ChirpVector4 r0;
-    r0.X() = sectionReader.readFloat();
-    r0.Y() = sectionReader.readFloat();
-    r0.Z() = sectionReader.readFloat();
-    r0.W() = sectionReader.readFloat();
-    math::ChirpVector4 r1;
-    r1.X() = sectionReader.readFloat();
-    r1.Y() = sectionReader.readFloat();
-    r1.Z() = sectionReader.readFloat();
-    r1.W() = sectionReader.readFloat();
-    math::ChirpVector4 r2;
-    r2.X() = sectionReader.readFloat();
-    r2.Y() = sectionReader.readFloat();
-    r2.Z() = sectionReader.readFloat();
-    r2.W() = sectionReader.readFloat();
+    math::ChirpVector4 r0{sectionReader.readFloat(), sectionReader.readFloat(),
+                          sectionReader.readFloat(), sectionReader.readFloat()};
+    math::ChirpVector4 r1{sectionReader.readFloat(), sectionReader.readFloat(),
+                          sectionReader.readFloat(), sectionReader.readFloat()};
+    math::ChirpVector4 r2{sectionReader.readFloat(), sectionReader.readFloat(),
+                          sectionReader.readFloat(), sectionReader.readFloat()};
 
     AddInverseBindMatrix(r0, r1, r2);
   }
@@ -82,7 +71,7 @@ bool ChirpBinarySkin::Import(SectionReader& sectionReader) {
   return true;
 }
 
-bool ChirpBinarySkin::Export(athena::io::IStreamWriter& outStream) { return true; }
+bool ChirpBinarySkin::Export(SectionWriter& outStream) { return true; }
 
 s64 ChirpBinarySkin::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
   ChunkId chunk = static_cast< ChunkId >(chunkId);

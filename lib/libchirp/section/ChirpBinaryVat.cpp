@@ -49,7 +49,7 @@ bool ChirpBinaryVat::Import(SectionReader& inStream) {
   return true;
 }
 
-bool ChirpBinaryVat::Export(athena::io::IStreamWriter& outStream) { return true; }
+bool ChirpBinaryVat::Export(SectionWriter& outStream) { return true; }
 
 s64 ChirpBinaryVat::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
   ChunkId chunk = static_cast< ChunkId >(chunkId);

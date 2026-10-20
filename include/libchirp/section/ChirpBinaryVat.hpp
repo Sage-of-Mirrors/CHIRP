@@ -50,7 +50,7 @@ public:
   ChirpBinaryVat(u64 offset, u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
 
   bool Import(SectionReader& inStream) override;
-  bool Export(athena::io::IStreamWriter& outStream) override;
+  bool Export(SectionWriter& outStream) override;
 
   ChirpVertexAttribute* GetVertexAttribute(gx::VtxAttribute attr);
 

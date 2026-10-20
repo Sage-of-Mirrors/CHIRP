@@ -3,10 +3,7 @@
 #include "libchirp/ChirpCommon.hpp"
 
 #include <athena/IStreamReader.hpp>
-
-namespace athena::io {
-class IStreamWriter;
-} // namespace athena::io
+#include <athena/IStreamWriter.hpp>
 
 namespace chirp::binary {
 enum class ChirpSectionType : u8 {
@@ -68,6 +65,50 @@ private:
   u64 m_sectionEnd;
 };
 
+class SectionWriter : athena::io::IStreamWriter {
+public:
+  SectionWriter(athena::io::IStreamWriter& outStream, u64 start, u64 end)
+  : m_outStream(outStream), m_sectionStart(start) {
+    setEndian(athena::Endian::Little);
+  }
+
+  u64 position() const override { return m_outStream.position(); }
+  u64 length() const override { return m_outStream.length(); }
+  void seek(s64 offset, athena::SeekOrigin origin = athena::SeekOrigin::Current) override {
+    const s64 curLength = length();
+    const s64 base = origin == athena::SeekOrigin::Begin ? 0
+                     : origin == athena::SeekOrigin::End ? static_cast< s64 >(curLength)
+                                                         : static_cast< s64 >(position());
+    if (offset < static_cast< s64 >(m_sectionStart) - base ||
+        offset > static_cast< s64 >(curLength) - base) {
+      setError();
+      return;
+    }
+    m_outStream.seek(base + offset, athena::SeekOrigin::Begin);
+    if (m_outStream.hasError()) {
+      setError();
+    }
+  }
+
+  void writeUBytes(const uint8_t* data, uint64_t length) override {
+    m_outStream.writeUBytes(data, length);
+  }
+
+  void writeAlign4() { writeZeroTo(ROUND_UP_4(position())); }
+  void writeAlign8() { writeZeroTo(ROUND_UP_8(position())); }
+  void writeAlign16() { writeZeroTo(ROUND_UP_16(position())); }
+
+  void writeOffset(s64 pos) {
+    s64 curPos = position();
+    seek(m_sectionStart + pos, athena::SeekOrigin::Begin);
+    writeUint32(static_cast< u32 >(curPos));
+  }
+
+private:
+  athena::io::IStreamWriter& m_outStream;
+  u64 m_sectionStart;
+};
+
 class ChirpBinarySection {
 public:
   virtual ~ChirpBinarySection() = default;
@@ -89,7 +130,7 @@ public:
   , m_elementCount(elementCount) {}
 
   virtual bool Import(SectionReader& inStream) = 0;
-  virtual bool Export(athena::io::IStreamWriter& outStream) = 0;
+  virtual bool Export(SectionWriter& outStream) = 0;
 
   ChirpSectionType GetType() const { return m_type; }
   u16 GetMajorVersion() const { return m_versionMajor; }

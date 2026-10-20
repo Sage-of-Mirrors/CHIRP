@@ -12,7 +12,7 @@ public:
   ChirpBinaryTextures(u64 offset, u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
 
   bool Import(SectionReader& inStream) override;
-  bool Export(athena::io::IStreamWriter& outStream) override;
+  bool Export(SectionWriter& outStream) override;
 
   bool HasTexture(std::string_view name) const { return m_textures.contains(std::string(name)); }
 

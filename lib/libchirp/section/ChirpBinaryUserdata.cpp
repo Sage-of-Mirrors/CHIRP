@@ -116,7 +116,7 @@ bool ChirpBinaryUserdata::Import(SectionReader& inStream) {
   return true;
 }
 
-bool ChirpBinaryUserdata::Export(athena::io::IStreamWriter& outStream) { return true; }
+bool ChirpBinaryUserdata::Export(SectionWriter& outStream) { return true; }
 
 s64 ChirpBinaryUserdata::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
   ChunkId chunk = static_cast< ChunkId >(chunkId);

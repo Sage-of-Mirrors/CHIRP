@@ -65,7 +65,7 @@ public:
   ChirpBinaryGeo(u64 offset, u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
 
   bool Import(SectionReader& inStream) override;
-  bool Export(athena::io::IStreamWriter& outStream) override;
+  bool Export(SectionWriter& outStream) override;
 
   ChirpMesh* CreateMesh(std::string_view name, std::string_view materialName);
 

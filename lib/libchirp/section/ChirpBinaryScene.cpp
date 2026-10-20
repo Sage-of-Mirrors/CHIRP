@@ -58,7 +58,7 @@ bool ChirpBinaryScene::Import(SectionReader& inStream) {
 
   return true;
 }
-bool ChirpBinaryScene::Export(athena::io::IStreamWriter& outStream) { return true; }
+bool ChirpBinaryScene::Export(SectionWriter& outStream) { return true; }
 
 s64 ChirpBinaryScene::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
   ChunkId chunk = static_cast< ChunkId >(chunkId);

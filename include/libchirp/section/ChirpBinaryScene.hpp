@@ -34,7 +34,7 @@ public:
   ChirpBinaryScene(u64 offset, u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
 
   bool Import(SectionReader& inStream) override;
-  bool Export(athena::io::IStreamWriter& outStream) override;
+  bool Export(SectionWriter& outStream) override;
 
   ChirpJoint* CreateJoint(std::string_view name,
                           u16 parentIndex = std::numeric_limits< u16 >::max());

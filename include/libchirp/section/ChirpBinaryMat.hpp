@@ -14,7 +14,7 @@ public:
   ChirpBinaryMaterials(u64 offset, u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
 
   bool Import(SectionReader& inStream) override;
-  bool Export(athena::io::IStreamWriter& outStream) override;
+  bool Export(SectionWriter& outStream) override;
 
   gx::Material* GetMaterial(std::string_view name) const;
   gx::Material* CreateMaterial(std::string_view name, bool colorUpdate = false,

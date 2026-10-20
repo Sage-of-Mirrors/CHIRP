@@ -89,7 +89,7 @@ bool ChirpBinaryGeo::Import(SectionReader& inStream) {
   return true;
 }
 
-bool ChirpBinaryGeo::Export(athena::io::IStreamWriter& outStream) { return true; }
+bool ChirpBinaryGeo::Export(SectionWriter& outStream) { return true; }
 
 s64 ChirpBinaryGeo::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
   ChunkId chunk = static_cast< ChunkId >(chunkId);

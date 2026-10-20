@@ -142,7 +142,7 @@ bool ChirpBinaryMaterials::Import(SectionReader& inStream) {
   return true;
 }
 
-bool ChirpBinaryMaterials::Export(athena::io::IStreamWriter& outStream) { return true; }
+bool ChirpBinaryMaterials::Export(SectionWriter& outStream) { return true; }
 
 gx::Material* ChirpBinaryMaterials::GetMaterial(std::string_view name) const {
   if (auto itr = m_materials.find(std::string(name)); itr != m_materials.end()) {
