@@ -1,8 +1,8 @@
 #include "libchirp/libchirp.hpp"
 #include "libchirp/ChirpBinarySectionManager.hpp"
 #include "libchirp/section/ChirpBinaryGeo.hpp"
+#include "libchirp/section/ChirpBinaryJoints.hpp"
 #include "libchirp/section/ChirpBinaryMat.hpp"
-#include "libchirp/section/ChirpBinaryScene.hpp"
 #include "libchirp/section/ChirpBinarySkin.hpp"
 #include "libchirp/section/ChirpBinaryTextures.hpp"
 #include "libchirp/section/ChirpBinaryUserdata.hpp"
@@ -15,8 +15,8 @@ void chirp::Init() {
                              binary::ChirpBinaryVat::CreateVATSectionWithOffset);
   sectionMgr.RegisterSection(FourCC("CGEO"), binary::ChirpBinaryGeo::CreateGEOSection,
                              binary::ChirpBinaryGeo::CreateGEOSectionWithOffset);
-  sectionMgr.RegisterSection(FourCC("CSCN"), binary::ChirpBinaryScene::CreateSCNSection,
-                             binary::ChirpBinaryScene::CreateSCNSectionWithOffset);
+  sectionMgr.RegisterSection(FourCC("CJNT"), binary::ChirpBinaryJoints::CreateJNTSection,
+                             binary::ChirpBinaryJoints::CreateJNTSectionWithOffset);
   sectionMgr.RegisterSection(FourCC("CMAT"), binary::ChirpBinaryMaterials::CreateMATSection,
                              binary::ChirpBinaryMaterials::CreateMATSectionWithOffset);
   sectionMgr.RegisterSection(FourCC("CUSR"), binary::ChirpBinaryUserdata::CreateUSRSection,

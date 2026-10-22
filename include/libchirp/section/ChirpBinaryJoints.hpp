@@ -27,11 +27,11 @@ private:
   chirp::math::ChirpTransform m_transform;
 };
 
-class ChirpBinaryScene : public ChirpBinarySection {
+class ChirpBinaryJoints : public ChirpBinarySection {
 public:
-  ChirpBinaryScene();
-  ChirpBinaryScene(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
-  ChirpBinaryScene(u64 offset, u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
+  ChirpBinaryJoints();
+  ChirpBinaryJoints(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
+  ChirpBinaryJoints(u64 offset, u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor);
 
   bool Import(SectionReader& inStream) override;
   bool Export(SectionWriter& outStream) override;
@@ -48,9 +48,9 @@ public:
     return index < m_joints.size() ? m_joints[index].get() : nullptr;
   }
 
-  static std::unique_ptr< ChirpBinarySection > CreateSCNSection(u32 size, u32 elementCount,
+  static std::unique_ptr< ChirpBinarySection > CreateJNTSection(u32 size, u32 elementCount,
                                                                 u16 versionMajor, u16 versionMinor);
-  static std::unique_ptr< ChirpBinarySection > CreateSCNSectionWithOffset(u64 offset, u32 size,
+  static std::unique_ptr< ChirpBinarySection > CreateJNTSectionWithOffset(u64 offset, u32 size,
                                                                           u32 elementCount,
                                                                           u16 versionMajor,
                                                                           u16 versionMinor);

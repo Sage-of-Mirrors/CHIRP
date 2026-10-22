@@ -1,16 +1,16 @@
-#include "libchirp/section/ChirpBinaryScene.hpp"
+#include "libchirp/section/ChirpBinaryJoints.hpp"
 
 #include <athena/VectorWriter.hpp>
 
 namespace chirp::binary {
-ChirpBinaryScene::ChirpBinaryScene() : ChirpBinarySection() {}
-ChirpBinaryScene::ChirpBinaryScene(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor)
+ChirpBinaryJoints::ChirpBinaryJoints() : ChirpBinarySection() {}
+ChirpBinaryJoints::ChirpBinaryJoints(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor)
 : ChirpBinarySection(size, elementCount, versionMajor, versionMinor) {}
-ChirpBinaryScene::ChirpBinaryScene(u64 offset, u32 size, u32 elementCount, u16 versionMajor,
-                                   u16 versionMinor)
+ChirpBinaryJoints::ChirpBinaryJoints(u64 offset, u32 size, u32 elementCount, u16 versionMajor,
+                                     u16 versionMinor)
 : ChirpBinarySection(offset, size, elementCount, versionMajor, versionMinor) {}
 
-bool ChirpBinaryScene::Import(SectionReader& inStream) {
+bool ChirpBinaryJoints::Import(SectionReader& inStream) {
   m_childIndicesOffset = inStream.readUint32();
   m_jointNamesOffset = inStream.readUint32();
   inStream.seekAlign16();
@@ -55,9 +55,9 @@ bool ChirpBinaryScene::Import(SectionReader& inStream) {
 
   return true;
 }
-bool ChirpBinaryScene::Export(SectionWriter& outStream) {
+bool ChirpBinaryJoints::Export(SectionWriter& outStream) {
   // Write section header.
-  outStream.writeUint32(FourCC("CSCN").toUint32());
+  outStream.writeUint32(FourCC("CJNT").toUint32());
   outStream.writeUint16(m_versionMajor);
   outStream.writeUint16(m_versionMinor);
   outStream.writeUint32(0); // Placeholder for section size.
@@ -110,7 +110,7 @@ bool ChirpBinaryScene::Export(SectionWriter& outStream) {
   return true;
 }
 
-s64 ChirpBinaryScene::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
+s64 ChirpBinaryJoints::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
   ChunkId chunk = static_cast< ChunkId >(chunkId);
 
   u32 chunkOffset{0};
@@ -131,7 +131,7 @@ s64 ChirpBinaryScene::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 
   return curPos;
 }
 
-ChirpJoint* ChirpBinaryScene::CreateJoint(std::string_view name, u16 parentIndex) {
+ChirpJoint* ChirpBinaryJoints::CreateJoint(std::string_view name, u16 parentIndex) {
   std::string nameAsStr(name);
   if (m_jointNameMap.contains(nameAsStr)) {
     return m_jointNameMap[nameAsStr];
@@ -144,15 +144,17 @@ ChirpJoint* ChirpBinaryScene::CreateJoint(std::string_view name, u16 parentIndex
   return m_joints.back().get();
 }
 
-std::unique_ptr< ChirpBinarySection >
-ChirpBinaryScene::CreateSCNSection(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor) {
-  return std::make_unique< ChirpBinaryScene >(
-      ChirpBinaryScene(size, elementCount, versionMajor, versionMinor));
+std::unique_ptr< ChirpBinarySection > ChirpBinaryJoints::CreateJNTSection(u32 size,
+                                                                          u32 elementCount,
+                                                                          u16 versionMajor,
+                                                                          u16 versionMinor) {
+  return std::make_unique< ChirpBinaryJoints >(
+      ChirpBinaryJoints(size, elementCount, versionMajor, versionMinor));
 }
 std::unique_ptr< ChirpBinarySection >
-ChirpBinaryScene::CreateSCNSectionWithOffset(u64 offset, u32 size, u32 elementCount,
-                                             u16 versionMajor, u16 versionMinor) {
-  return std::make_unique< ChirpBinaryScene >(
-      ChirpBinaryScene(offset, size, elementCount, versionMajor, versionMinor));
+ChirpBinaryJoints::CreateJNTSectionWithOffset(u64 offset, u32 size, u32 elementCount,
+                                              u16 versionMajor, u16 versionMinor) {
+  return std::make_unique< ChirpBinaryJoints >(
+      ChirpBinaryJoints(offset, size, elementCount, versionMajor, versionMinor));
 }
 } // namespace chirp::binary
