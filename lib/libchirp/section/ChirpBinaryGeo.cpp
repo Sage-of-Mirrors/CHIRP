@@ -1,13 +1,15 @@
 #include "libchirp/section/ChirpBinaryGeo.hpp"
 
-#include <athena/IStreamReader.hpp>
-#include <athena/IStreamWriter.hpp>
+#include <athena/VectorWriter.hpp>
 
 #include <cmath>
 
 namespace chirp::binary {
 ChirpMesh::ChirpMesh(std::string_view name, std::string_view materialName)
 : m_name(name), m_materialName(materialName) {}
+ChirpMesh::ChirpMesh(std::string_view name, std::string_view materialName,
+                     const math::ChirpVector3& minBounds, const math::ChirpVector3& maxBounds)
+: m_name(name), m_materialName(materialName), m_aabb(minBounds, maxBounds) {}
 
 void ChirpMesh::ReadPrimitive(athena::io::IStreamReader& inStream) {
   ChirpBinaryPrimitive& newPrim = CreatePrimitive();
@@ -59,6 +61,9 @@ bool ChirpBinaryGeo::Import(SectionReader& inStream) {
     u32 vtxAttributesOffset = inStream.readUint32();
     u32 primitiveOffset = inStream.readUint32();
 
+    math::ChirpVector3 minBounds{inStream.readFloat(), inStream.readFloat(), inStream.readFloat()};
+    math::ChirpVector3 maxBounds{inStream.readFloat(), inStream.readFloat(), inStream.readFloat()};
+
     // Read the mesh's name.
     s64 nextMeshPos = SeekToChunk(inStream, static_cast< u8 >(ChunkId::MeshNames), meshNameOffset);
     std::string meshName = inStream.readString(meshNameLength);
@@ -67,7 +72,7 @@ bool ChirpBinaryGeo::Import(SectionReader& inStream) {
     SeekToChunk(inStream, static_cast< u8 >(ChunkId::MaterialNames), materialNameOffset);
     std::string materialName = inStream.readString(materialNameLength);
 
-    ChirpMesh* newMesh = CreateMesh(meshName, materialName);
+    ChirpMesh* newMesh = CreateMesh(meshName, materialName, minBounds, maxBounds);
 
     // Read the mesh's enabled vertex attributes.
     SeekToChunk(inStream, static_cast< u8 >(ChunkId::Attributes), vtxAttributesOffset);
@@ -89,7 +94,94 @@ bool ChirpBinaryGeo::Import(SectionReader& inStream) {
   return true;
 }
 
-bool ChirpBinaryGeo::Export(SectionWriter& outStream) { return true; }
+bool ChirpBinaryGeo::Export(SectionWriter& outStream) {
+  // Write section header.
+  outStream.writeUint32(FourCC("CGEO").toUint32());
+  outStream.writeUint16(m_versionMajor);
+  outStream.writeUint16(m_versionMinor);
+  outStream.writeUint32(0); // Placeholder for section size.
+  outStream.writeUint32(static_cast< u32 >(m_meshes.size()));
+  outStream.writeUint32(0); // Placeholder for attributes offset.
+  outStream.writeUint32(0); // Placeholder for primitives offset.
+  outStream.writeUint32(0); // Placeholder for mesh names offset.
+  outStream.writeUint32(0); // Placeholder for material names offset.
+  outStream.writeAlign16();
+
+  athena::io::VectorWriter attributesWriter;
+  attributesWriter.setEndian(athena::Endian::Little);
+  athena::io::VectorWriter primitivesWriter;
+  primitivesWriter.setEndian(athena::Endian::Little);
+  athena::io::VectorWriter meshNamesWriter;
+  meshNamesWriter.setEndian(athena::Endian::Little);
+  athena::io::VectorWriter materialNamesWriter;
+  materialNamesWriter.setEndian(athena::Endian::Little);
+
+  for (const auto& m : m_meshes) {
+    std::string meshName = m->GetName();
+    std::string materialName = m->GetMaterialName();
+    auto& attributes = m->GetEnabledAttributes();
+    auto& primitives = m->GetPrimitives();
+
+    // Write mesh entry.
+    outStream.writeUint16(static_cast< u16 >(meshName.size() + 1)); // Add 1 for null terminator.
+    outStream.writeUint16(static_cast< u16 >(materialName.size() + 1)); // ^
+    outStream.writeUint16(static_cast< u16 >(attributes.size()));
+    outStream.writeUint16(static_cast< u16 >(primitives.size()));
+
+    outStream.writeUint32(static_cast< u32 >(meshNamesWriter.position()));
+    meshNamesWriter.writeString(meshName);
+
+    outStream.writeUint32(static_cast< u32 >(materialNamesWriter.position()));
+    materialNamesWriter.writeString(materialName);
+
+    outStream.writeUint32(static_cast< u32 >(attributesWriter.position()));
+    for (const auto& attr : attributes) {
+      attributesWriter.writeUByte(static_cast< u8 >(attr.first));
+      attributesWriter.writeUByte(static_cast< u8 >(attr.second));
+    }
+
+    outStream.writeUint32(static_cast< u32 >(primitivesWriter.position()));
+    for (const auto& prim : primitives) {
+      primitivesWriter.writeUint16(static_cast< u16 >(
+          prim.size() * 3)); // Multiply by 3 because each element here is a triangle.
+
+      for (auto& tri : prim) {
+        for (auto& vert : tri) {
+          for (auto& attr : vert) {
+            primitivesWriter.writeUint16(attr.second);
+          }
+        }
+      }
+    }
+
+    outStream.writeAabb(m->GetAabb());
+  }
+
+  // Write attributes table.
+  outStream.writeAlign16();
+  outStream.writeOffset(kAttributesOffsetPos);
+  outStream.writeUBytes(attributesWriter.data().data(), attributesWriter.length());
+
+  // Write primitives table.
+  outStream.writeAlign16();
+  outStream.writeOffset(kPrimitivesOffsetPos);
+  outStream.writeUBytes(primitivesWriter.data().data(), primitivesWriter.length());
+
+  // Write mesh names table.
+  outStream.writeAlign16();
+  outStream.writeOffset(kMeshNamesOffsetPos);
+  outStream.writeUBytes(meshNamesWriter.data().data(), meshNamesWriter.length());
+
+  // Write material names table.
+  outStream.writeAlign16();
+  outStream.writeOffset(kMaterialNamesOffsetPos);
+  outStream.writeUBytes(materialNamesWriter.data().data(), materialNamesWriter.length());
+
+  outStream.writeAlign16();
+  outStream.writeSectionSize();
+
+  return true;
+}
 
 s64 ChirpBinaryGeo::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
   ChunkId chunk = static_cast< ChunkId >(chunkId);
@@ -118,8 +210,10 @@ s64 ChirpBinaryGeo::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 da
   return curPos;
 }
 
-ChirpMesh* ChirpBinaryGeo::CreateMesh(std::string_view name, std::string_view materialName) {
-  auto newMesh = std::make_unique< ChirpMesh >(name, materialName);
+ChirpMesh* ChirpBinaryGeo::CreateMesh(std::string_view name, std::string_view materialName,
+                                      const math::ChirpVector3& minBounds,
+                                      const math::ChirpVector3& maxBounds) {
+  auto newMesh = std::make_unique< ChirpMesh >(name, materialName, minBounds, maxBounds);
   m_meshes.push_back(std::move(newMesh));
 
   return m_meshes.back().get();

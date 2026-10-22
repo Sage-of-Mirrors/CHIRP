@@ -1,6 +1,9 @@
 #pragma once
 
 #include "libchirp/ChirpCommon.hpp"
+#include "libchirp/math/ChirpAabb.hpp"
+#include "libchirp/math/ChirpQuat.hpp"
+#include "libchirp/math/ChirpTransform.hpp"
 #include "libchirp/math/ChirpVector.hpp"
 
 #include <athena/IStreamReader.hpp>
@@ -111,11 +114,35 @@ public:
     seek(0, athena::SeekOrigin::End);
   }
 
+  void writeVector3(const math::ChirpVector3& vec3) {
+    writeFloat(vec3.X());
+    writeFloat(vec3.Y());
+    writeFloat(vec3.Z());
+  }
+
   void writeVector4(const math::ChirpVector4& vec4) {
     writeFloat(vec4.X());
     writeFloat(vec4.Y());
     writeFloat(vec4.Z());
     writeFloat(vec4.W());
+  }
+
+  void writeQuaternion(const math::ChirpQuaternion& quat) {
+    writeFloat(quat.X());
+    writeFloat(quat.Y());
+    writeFloat(quat.Z());
+    writeFloat(quat.W());
+  }
+
+  void writeTransform(const math::ChirpTransform& transform) {
+    writeVector3(transform.Position());
+    writeQuaternion(transform.Rotation());
+    writeVector3(transform.Scale());
+  }
+
+  void writeAabb(const math::ChirpAabb& aabb) {
+    writeVector3(aabb.GetMinimum());
+    writeVector3(aabb.GetMaximum());
   }
 
 private:

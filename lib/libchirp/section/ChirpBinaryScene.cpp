@@ -1,7 +1,6 @@
 #include "libchirp/section/ChirpBinaryScene.hpp"
 
-#include <athena/IStreamReader.hpp>
-#include <athena/IStreamWriter.hpp>
+#include <athena/VectorWriter.hpp>
 
 namespace chirp::binary {
 ChirpBinaryScene::ChirpBinaryScene() : ChirpBinarySection() {}
@@ -58,7 +57,60 @@ bool ChirpBinaryScene::Import(SectionReader& inStream) {
 
   return true;
 }
-bool ChirpBinaryScene::Export(SectionWriter& outStream) { return true; }
+bool ChirpBinaryScene::Export(SectionWriter& outStream) {
+  // Write section header.
+  outStream.writeUint32(FourCC("CSCN").toUint32());
+  outStream.writeUint16(m_versionMajor);
+  outStream.writeUint16(m_versionMinor);
+  outStream.writeUint32(0); // Placeholder for section size.
+  outStream.writeUint32(static_cast< u32 >(m_joints.size()));
+  outStream.writeUint32(0); // Placeholder for child indices offset.
+  outStream.writeUint32(0); // Placeholder for names offset.
+  outStream.writeAlign16();
+
+  athena::io::VectorWriter childIndicesWriter;
+  childIndicesWriter.setEndian(athena::Endian::Little);
+  athena::io::VectorWriter jointNamesWriter;
+  jointNamesWriter.setEndian(athena::Endian::Little);
+
+  for (const auto& j : m_joints) {
+    std::string name = j->GetName();
+    auto& childIndices = j->GetChildIndices();
+
+    // Write joint entry.
+    outStream.writeUint16(static_cast< u16 >(name.size() + 1)); // Add 1 for the null-terminator.
+    outStream.writeUint16(j->GetParentIndex());
+    outStream.writeUint16(static_cast< u16 >(childIndices.size()));
+    outStream.writeUint16(0);
+
+    outStream.writeUint32(static_cast< u32 >(jointNamesWriter.position()));
+    jointNamesWriter.writeString(name);
+
+    outStream.writeUint32(static_cast< u32 >(childIndicesWriter.position()));
+    for (const u16& c : childIndices) {
+      childIndicesWriter.writeUint16(c);
+    }
+
+    outStream.writeTransform(j->GetTransform());
+  }
+
+  // Write accumulated child indices, if there are any.
+  if (childIndicesWriter.length()) {
+    outStream.writeAlign16();
+    outStream.writeOffset(kChildIndicesOffsetPos);
+    outStream.writeUBytes(childIndicesWriter.data().data(), childIndicesWriter.length());
+  }
+
+  // Write accumulated joint names.
+  outStream.writeAlign16();
+  outStream.writeOffset(kJointNamesOffsetPos);
+  outStream.writeUBytes(jointNamesWriter.data().data(), jointNamesWriter.length());
+
+  outStream.writeAlign16();
+  outStream.writeSectionSize();
+
+  return true;
+}
 
 s64 ChirpBinaryScene::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
   ChunkId chunk = static_cast< ChunkId >(chunkId);

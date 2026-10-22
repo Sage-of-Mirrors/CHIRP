@@ -59,6 +59,9 @@ protected:
   s64 SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset = 0) override;
 
 private:
+  static constexpr u32 kChildIndicesOffsetPos{0x10};
+  static constexpr u32 kJointNamesOffsetPos{0x14};
+
   enum class ChunkId : u8 { ChildIndices, JointNames };
 
   u32 m_childIndicesOffset{0};
