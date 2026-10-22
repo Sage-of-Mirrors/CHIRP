@@ -100,11 +100,10 @@ const ChirpKeyValue& ChirpUserData::operator[](std::string_view key) { return Ge
 ChirpBinaryUserdata::ChirpBinaryUserdata() : ChirpBinarySection() {}
 ChirpBinaryUserdata::ChirpBinaryUserdata(u32 size, u32 elementCount, u16 versionMajor,
                                          u16 versionMinor)
-: ChirpBinarySection(ChirpSectionType::Userdata, size, elementCount, versionMajor, versionMinor) {}
+: ChirpBinarySection(size, elementCount, versionMajor, versionMinor) {}
 ChirpBinaryUserdata::ChirpBinaryUserdata(u64 offset, u32 size, u32 elementCount, u16 versionMajor,
                                          u16 versionMinor)
-: ChirpBinarySection(ChirpSectionType::Userdata, offset, size, elementCount, versionMajor,
-                     versionMinor) {}
+: ChirpBinarySection(offset, size, elementCount, versionMajor, versionMinor) {}
 
 bool ChirpBinaryUserdata::Import(SectionReader& inStream) {
   ReadOffsets(inStream);

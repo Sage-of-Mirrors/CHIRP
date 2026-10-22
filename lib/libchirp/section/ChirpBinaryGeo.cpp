@@ -37,12 +37,11 @@ void ChirpMesh::ReadPrimitive(athena::io::IStreamReader& inStream) {
 ChirpBinaryGeo::ChirpBinaryGeo() : ChirpBinarySection() {}
 
 ChirpBinaryGeo::ChirpBinaryGeo(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor)
-: ChirpBinarySection(ChirpSectionType::Geometry, size, elementCount, versionMajor, versionMinor) {}
+: ChirpBinarySection(size, elementCount, versionMajor, versionMinor) {}
 
 ChirpBinaryGeo::ChirpBinaryGeo(u64 offset, u32 size, u32 elementCount, u16 versionMajor,
                                u16 versionMinor)
-: ChirpBinarySection(ChirpSectionType::Geometry, offset, size, elementCount, versionMajor,
-                     versionMinor) {}
+: ChirpBinarySection(offset, size, elementCount, versionMajor, versionMinor) {}
 
 bool ChirpBinaryGeo::Import(SectionReader& inStream) {
   m_attributesOffset = inStream.readUint32();

@@ -9,12 +9,11 @@ namespace chirp::binary {
 ChirpBinaryVat::ChirpBinaryVat() : ChirpBinarySection() {}
 
 ChirpBinaryVat::ChirpBinaryVat(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor)
-: ChirpBinarySection(ChirpSectionType::Vertex, size, elementCount, versionMajor, versionMinor) {}
+: ChirpBinarySection(size, elementCount, versionMajor, versionMinor) {}
 
 ChirpBinaryVat::ChirpBinaryVat(u64 offset, u32 size, u32 elementCount, u16 versionMajor,
                                u16 versionMinor)
-: ChirpBinarySection(ChirpSectionType::Vertex, offset, size, elementCount, versionMajor,
-                     versionMinor) {}
+: ChirpBinarySection(offset, size, elementCount, versionMajor, versionMinor) {}
 
 bool ChirpBinaryVat::Import(SectionReader& inStream) {
   m_attributesOffset = inStream.readUint32();

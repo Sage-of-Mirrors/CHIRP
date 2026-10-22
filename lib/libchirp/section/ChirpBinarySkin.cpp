@@ -6,11 +6,10 @@
 namespace chirp::binary {
 ChirpBinarySkin::ChirpBinarySkin() : ChirpBinarySection() {}
 ChirpBinarySkin::ChirpBinarySkin(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor)
-: ChirpBinarySection(ChirpSectionType::Skinning, size, elementCount, versionMajor, versionMinor) {}
+: ChirpBinarySection(size, elementCount, versionMajor, versionMinor) {}
 ChirpBinarySkin::ChirpBinarySkin(u64 offset, u32 size, u32 elementCount, u16 versionMajor,
                                  u16 versionMinor)
-: ChirpBinarySection(ChirpSectionType::Skinning, offset, size, elementCount, versionMajor,
-                     versionMinor) {}
+: ChirpBinarySection(offset, size, elementCount, versionMajor, versionMinor) {}
 
 math::ChirpMatrix3x4& ChirpBinarySkin::AddInverseBindMatrix() {
   m_inverseBindMatrices.emplace_back();

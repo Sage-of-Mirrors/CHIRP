@@ -6,11 +6,10 @@ namespace chirp::binary {
 ChirpBinaryTextures::ChirpBinaryTextures() : ChirpBinarySection() {}
 ChirpBinaryTextures::ChirpBinaryTextures(u32 size, u32 elementCount, u16 versionMajor,
                                          u16 versionMinor)
-: ChirpBinarySection(ChirpSectionType::Materials, size, elementCount, versionMajor, versionMinor) {}
+: ChirpBinarySection(size, elementCount, versionMajor, versionMinor) {}
 ChirpBinaryTextures::ChirpBinaryTextures(u64 offset, u32 size, u32 elementCount, u16 versionMajor,
                                          u16 versionMinor)
-: ChirpBinarySection(ChirpSectionType::Materials, offset, size, elementCount, versionMajor,
-                     versionMinor) {}
+: ChirpBinarySection(offset, size, elementCount, versionMajor, versionMinor) {}
 
 bool ChirpBinaryTextures::Import(SectionReader& inStream) {
   m_imageDataOffset = inStream.readUint32();

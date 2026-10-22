@@ -179,5 +179,9 @@ public:
   constexpr char* getChars() noexcept { return fcc; }
   constexpr bool IsValid() const noexcept { return num != 0; }
 };
+
+struct FourCCHash {
+  size_t operator()(const FourCC& f) const noexcept { return f.toUint32(); }
+};
 #define FOURCC(chars) FourCC(SBIG(chars))
 } // namespace chirp

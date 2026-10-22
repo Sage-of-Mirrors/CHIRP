@@ -5,12 +5,10 @@
 namespace chirp::binary {
 ChirpBinaryScene::ChirpBinaryScene() : ChirpBinarySection() {}
 ChirpBinaryScene::ChirpBinaryScene(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor)
-: ChirpBinarySection(ChirpSectionType::Scenegraph, size, elementCount, versionMajor, versionMinor) {
-}
+: ChirpBinarySection(size, elementCount, versionMajor, versionMinor) {}
 ChirpBinaryScene::ChirpBinaryScene(u64 offset, u32 size, u32 elementCount, u16 versionMajor,
                                    u16 versionMinor)
-: ChirpBinarySection(ChirpSectionType::Scenegraph, offset, size, elementCount, versionMajor,
-                     versionMinor) {}
+: ChirpBinarySection(offset, size, elementCount, versionMajor, versionMinor) {}
 
 bool ChirpBinaryScene::Import(SectionReader& inStream) {
   m_childIndicesOffset = inStream.readUint32();

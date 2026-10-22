@@ -126,11 +126,10 @@ namespace chirp::binary {
 ChirpBinaryMaterials::ChirpBinaryMaterials() : ChirpBinarySection() {}
 ChirpBinaryMaterials::ChirpBinaryMaterials(u32 size, u32 elementCount, u16 versionMajor,
                                            u16 versionMinor)
-: ChirpBinarySection(ChirpSectionType::Materials, size, elementCount, versionMajor, versionMinor) {}
+: ChirpBinarySection(size, elementCount, versionMajor, versionMinor) {}
 ChirpBinaryMaterials::ChirpBinaryMaterials(u64 offset, u32 size, u32 elementCount, u16 versionMajor,
                                            u16 versionMinor)
-: ChirpBinarySection(ChirpSectionType::Materials, offset, size, elementCount, versionMajor,
-                     versionMinor) {}
+: ChirpBinarySection(offset, size, elementCount, versionMajor, versionMinor) {}
 
 bool ChirpBinaryMaterials::Import(SectionReader& inStream) {
   ReadOffsets(inStream);

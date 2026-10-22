@@ -12,7 +12,7 @@ class IStreamWriter;
 
 namespace chirp::binary {
 using ChirpBinarySectionMap =
-    std::unordered_map< ChirpSectionType, std::unique_ptr< ChirpBinarySection > >;
+    std::unordered_map< FourCC, std::unique_ptr< ChirpBinarySection >, FourCCHash >;
 
 class ChirpBinaryImportOptions;
 class ChirpBinaryExportOptions;
@@ -48,33 +48,19 @@ public:
   // Returns the number of sections that this ChirpBinary instance contains.
   u32 GetSectionCount() const { return m_sections.size(); }
   // Returns whether this ChirpBinary instance contains a section of the given type.
-  bool HasSectionType(ChirpSectionType type) const { return m_sections.contains(type); }
+  bool HasSectionType(FourCC type) const { return m_sections.contains(type); }
 
   // Attempts to retrieve a section of the given type from this ChirpBinary instance.
   // Returns nullptr if an invalid type is given or if the instance does not contain
   // a section of that type.
   template < typename T,
              typename = typename std::enable_if< std::is_base_of_v< ChirpBinarySection, T > > >
-  T* GetSection(ChirpSectionType type) {
-    if (type == ChirpSectionType::Unknown) {
-      std::cerr << "Attempted to get a section of an unknown type from "
-                   "ChirpBinary."
-                << std::endl;
-      return nullptr;
-    }
-    if (type >= ChirpSectionType::SectionTypeMax) {
-      std::cerr << "Attempted to get a section of an invalid type from "
-                   "ChirpBinary."
-                << std::endl;
-      return nullptr;
-    }
-
+  T* GetSection(FourCC type) {
     if (auto itr = m_sections.find(type); itr != m_sections.end()) {
       return static_cast< T* >(itr->second.get());
     }
 
-    std::cerr << "Attempted to get a section from ChirpBinary that it "
-                 "doesn't have."
+    std::cerr << "ChirpBinary has no section with FourCC \"" << type.toString() << "\"."
               << std::endl;
     return nullptr;
   }
@@ -84,23 +70,9 @@ public:
   // or if this instance already contains a section of the given type.
   template < typename T,
              typename = typename std::enable_if< std::is_base_of_v< ChirpBinarySection, T > > >
-  T* CreateSection(ChirpSectionType type) {
-    if (type == ChirpSectionType::Unknown) {
-      std::cerr << "Attempted to create a section of an unknown type for "
-                   "ChirpBinary."
-                << std::endl;
-      return nullptr;
-    }
-    if (type >= ChirpSectionType::SectionTypeMax) {
-      std::cerr << "Attempted to create a section of an invalid type for "
-                   "ChirpBinary."
-                << std::endl;
-      return nullptr;
-    }
-
+  T* CreateSection(FourCC type) {
     if (HasSectionType(type)) {
-      std::cerr << "Attempted to create a section for "
-                   "ChirpBinary of a type it already has."
+      std::cerr << "ChirpBinary already has a section with FourCC \"" << type.toString() << "\"."
                 << std::endl;
       return nullptr;
     }

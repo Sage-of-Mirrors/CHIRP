@@ -1,32 +1,19 @@
 #pragma once
 
 #include "libchirp/ChirpCommon.hpp"
-#include "libchirp/math/ChirpAabb.hpp"
-#include "libchirp/math/ChirpQuat.hpp"
-#include "libchirp/math/ChirpTransform.hpp"
-#include "libchirp/math/ChirpVector.hpp"
 
 #include <athena/IStreamReader.hpp>
 #include <athena/IStreamWriter.hpp>
 
+namespace chirp::math {
+class ChirpAabb;
+class ChirpQuaternion;
+class ChirpTransform;
+class ChirpVector3;
+class ChirpVector4;
+} // chirp::math
+
 namespace chirp::binary {
-enum class ChirpSectionType : u8 {
-  Unknown,
-
-  Vertex,            // CVAT
-  Skinning,          // CSKN
-  Scenegraph,        // CSCN
-  Geometry,          // CGEO
-  Materials,         // CMAT
-  Textures,          // CTEX
-  Userdata,          // CUSR
-  KeyAnimation,      // CKAN
-  MaterialAnimation, // CMAN
-  TextureAnimation,  // CTAN
-
-  SectionTypeMax
-};
-
 class SectionReader : public athena::io::IStreamReader {
 public:
   SectionReader(athena::io::IStreamReader& inStream, u64 start, u64 end)
@@ -114,36 +101,11 @@ public:
     seek(0, athena::SeekOrigin::End);
   }
 
-  void writeVector3(const math::ChirpVector3& vec3) {
-    writeFloat(vec3.X());
-    writeFloat(vec3.Y());
-    writeFloat(vec3.Z());
-  }
-
-  void writeVector4(const math::ChirpVector4& vec4) {
-    writeFloat(vec4.X());
-    writeFloat(vec4.Y());
-    writeFloat(vec4.Z());
-    writeFloat(vec4.W());
-  }
-
-  void writeQuaternion(const math::ChirpQuaternion& quat) {
-    writeFloat(quat.X());
-    writeFloat(quat.Y());
-    writeFloat(quat.Z());
-    writeFloat(quat.W());
-  }
-
-  void writeTransform(const math::ChirpTransform& transform) {
-    writeVector3(transform.Position());
-    writeQuaternion(transform.Rotation());
-    writeVector3(transform.Scale());
-  }
-
-  void writeAabb(const math::ChirpAabb& aabb) {
-    writeVector3(aabb.GetMinimum());
-    writeVector3(aabb.GetMaximum());
-  }
+  void writeVector3(const math::ChirpVector3& vec3);
+  void writeVector4(const math::ChirpVector4& vec4);
+  void writeQuaternion(const math::ChirpQuaternion& quat);
+  void writeTransform(const math::ChirpTransform& transform);
+  void writeAabb(const math::ChirpAabb& aabb);
 
 private:
   athena::io::IStreamWriter& m_outStream;
@@ -154,17 +116,15 @@ class ChirpBinarySection {
 public:
   virtual ~ChirpBinarySection() = default;
   ChirpBinarySection() = default;
-  ChirpBinarySection(ChirpSectionType type, u32 size, u32 elementCount, u16 versionMajor,
+  ChirpBinarySection(u32 size, u32 elementCount, u16 versionMajor,
                      u16 versionMinor)
-  : m_type(type)
-  , m_versionMajor(versionMajor)
+  : m_versionMajor(versionMajor)
   , m_versionMinor(versionMinor)
   , m_size(size)
   , m_elementCount(elementCount) {}
-  ChirpBinarySection(ChirpSectionType type, u64 offset, u32 size, u32 elementCount,
+  ChirpBinarySection(u64 offset, u32 size, u32 elementCount,
                      u16 versionMajor, u16 versionMinor)
-  : m_type(type)
-  , m_versionMajor(versionMajor)
+  : m_versionMajor(versionMajor)
   , m_versionMinor(versionMinor)
   , m_offset(offset)
   , m_size(size)
@@ -173,7 +133,6 @@ public:
   virtual bool Import(SectionReader& inStream) = 0;
   virtual bool Export(SectionWriter& outStream) = 0;
 
-  ChirpSectionType GetType() const { return m_type; }
   u16 GetMajorVersion() const { return m_versionMajor; }
   u16 GetMinorVersion() const { return m_versionMinor; }
   std::string GetVersionString() const {
@@ -184,7 +143,6 @@ public:
 
 protected:
   virtual s64 SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset = 0) = 0;
-  ChirpSectionType m_type{ChirpSectionType::Unknown};
 
   u16 m_versionMajor{0};
   u16 m_versionMinor{0};

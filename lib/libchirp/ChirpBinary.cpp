@@ -77,7 +77,7 @@ bool ChirpBinary::Import(athena::io::IStreamReader& inStream) {
 
     SectionReader sectionReader(inStream, sectionStart, sectionStart + sectionSize);
     newSection->Import(sectionReader);
-    m_sections[newSection->GetType()] = std::move(newSection);
+    m_sections[sectionFourcc] = std::move(newSection);
 
     inStream.seek(static_cast< s64 >(sectionStart + sectionSize), athena::SeekOrigin::Begin);
   }
@@ -90,7 +90,7 @@ bool ChirpBinary::Export(athena::io::IStreamWriter& outStream) {
   outStream.writeUint16(m_verMajor);
   outStream.writeUint16(m_verMinor);
   outStream.writeUint32(0); // Placeholder for total file size.
-  outStream.writeUint32(static_cast<u32>(m_sections.size()));
+  outStream.writeUint32(static_cast< u32 >(m_sections.size()));
 
   outStream.writeZeroTo(outStream.position() + 0x10);
 
