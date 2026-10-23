@@ -17,6 +17,8 @@ using ChirpBinarySectionMap =
 class ChirpBinaryImportOptions;
 class ChirpBinaryExportOptions;
 
+enum class ChirpOptLevel { o0, o1, o2 };
+
 class ChirpBinary {
 public:
   ChirpBinary() = default;
