@@ -1,95 +1,47 @@
 #pragma once
 
 #include "libchirp/ChirpCommon.hpp"
+#include "libchirp/ChirpKeyValue.hpp"
 #include "libchirp/section/ChirpBinarySection.hpp"
 
-#include <variant>
-
 namespace chirp::binary {
-class ChirpKeyValue;
+class ChirpUserData;
 
-using ChirpUserTuple = std::unordered_map< std::string, ChirpKeyValue >;
-using ChirpUserValue =
-    std::variant< std::nullptr_t, bool, s64, double, std::string, ChirpUserTuple >;
-
-class ChirpKeyValue {
-public:
-  ChirpKeyValue(std::string_view key) : m_key(key), m_value(nullptr) {}
-  ChirpKeyValue() : m_key(""), m_value(nullptr) {}
-
-  std::string GetKey() const { return m_key; }
-  const ChirpUserValue& GetValue() const { return m_value; }
-
-  template < typename T >
-  const T& GetValue() const {
-    const T* valPtr = std::get_if< T >(&m_value);
-    if (!valPtr) {
-      throw new std::invalid_argument("UserValue value was empty.");
-    }
-
-    return *valPtr;
-  }
-
-  template < typename T >
-  T& GetValue() {
-    T* valPtr = std::get_if< T >(&m_value);
-    if (!valPtr) {
-      throw new std::invalid_argument("UserValue value was empty.");
-    }
-
-    return *valPtr;
-  }
-
-  const ChirpKeyValue& GetValue(std::string_view key);
-
-  template < typename T >
-  void SetValue(const T& newVal) {
-    m_value = newVal;
-  }
-
-  void SetValue(ChirpUserTuple&& tuple) { m_value = tuple; }
-
-  const ChirpKeyValue& operator[](std::string_view key);
-
-private:
-  std::string m_key;
-  ChirpUserValue m_value;
-};
+using ChirpUserDataChildren = std::unordered_map< std::string, ChirpUserData >;
 
 class ChirpUserData {
 public:
   ChirpUserData(std::string_view name) : m_namespace(name) {}
+  ChirpUserData() : ChirpUserData("") {}
 
   std::string GetNamespace() const { return m_namespace; }
-  std::unordered_map< std::string, std::unique_ptr< ChirpKeyValue > >& GetFields() {
-    return m_fields;
-  }
-  std::unordered_map< std::string, std::unique_ptr< ChirpUserData > >& GetChildren() {
-    return m_children;
-  }
+  ChirpKeyValueTuple& GetFields() { return m_fields; }
+  ChirpUserDataChildren& GetChildren() { return m_children; }
 
   bool HasField(std::string_view key) const { return m_fields.contains(std::string(key)); }
+  bool HasChild(std::string_view key) const { return m_children.contains(std::string(key)); }
 
-  const ChirpKeyValue& GetField(std::string_view key);
+  ChirpKeyValue& GetField(std::string_view key);
+  ChirpUserData& GetChild(std::string_view key);
+
+  ChirpKeyValue* CreateField(std::string_view name);
+  ChirpUserData* CreateChild(std::string_view name);
 
   template < typename T >
-  const T& GetValue(std::string_view key) {
+  T Get(std::string_view key) {
     if (!HasField(key)) {
-      throw new std::invalid_argument("KeyValue key not found.");
+      return T{};
     }
 
-    return m_fields[std::string(key)]->GetValue< T >();
+    return m_fields[std::string(key)]->Get< T >();
   }
 
-  ChirpUserData* CreateChild(std::string_view name);
-  ChirpKeyValue* CreateField(std::string_view name);
-
-  const ChirpKeyValue& operator[](std::string_view key);
+  ChirpKeyValue& operator[](std::string_view key);
 
 private:
   std::string m_namespace;
-  std::unordered_map< std::string, std::unique_ptr< ChirpKeyValue > > m_fields;
-  std::unordered_map< std::string, std::unique_ptr< ChirpUserData > > m_children;
+  ChirpKeyValueTuple m_fields;
+  ChirpUserDataChildren m_children;
 };
 
 class ChirpBinaryUserdata : public ChirpBinarySection {
