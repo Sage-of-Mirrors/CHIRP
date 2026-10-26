@@ -8,6 +8,8 @@
 #include <athena/VectorWriter.hpp>
 
 namespace chirp::binary {
+ChirpBinaryIOOptions ChirpBinary::s_ioOptions{};
+
 bool ChirpBinary::Import(const std::filesystem::path& inFilepath) {
   athena::io::FileReader inStream(inFilepath.generic_string());
   inStream.setEndian(athena::Endian::Little);

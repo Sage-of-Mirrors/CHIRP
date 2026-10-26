@@ -1,6 +1,7 @@
 #pragma once
 
 #include "libchirp/ChirpCommon.hpp"
+#include "libchirp/ChirpIOOptions.hpp"
 #include "libchirp/section/ChirpBinarySection.hpp"
 
 #include <unordered_map>
@@ -83,7 +84,11 @@ public:
     return static_cast< T* >(m_sections[type].get());
   }
 
+  static ChirpBinaryIOOptions& GetIOOptions() { return s_ioOptions; }
+
 private:
+  static ChirpBinaryIOOptions s_ioOptions;
+
   ChirpBinarySectionMap m_sections;
 
   u32 m_verMajor{0};

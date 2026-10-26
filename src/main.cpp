@@ -1,9 +1,20 @@
+#include <libchirp-text/ChirpText.hpp>
 #include <libchirp/ChirpBinary.hpp>
 #include <libchirp/libchirp.hpp>
 
 #include <algorithm>
 #include <filesystem>
 #include <iostream>
+
+enum class ReturnCode : int {
+  TextExportError = -6,
+  TextImportError = -5,
+  BinExportError = -4,
+  BinImportError = -3,
+  ArgValidationError = -2,
+  ArgParseError = -1,
+  Ok = 0
+};
 
 struct ChirpArgs {
   std::filesystem::path m_inFilepath;
@@ -213,22 +224,50 @@ int main(int argc, char* argv[]) {
   if (argc <= 1 || std::strcmp(argv[1], "--help") == 0 || std::strcmp(argv[1], "-h") == 0) {
     PrintUsage();
     PrintArguments();
-    return 0;
+    return static_cast< int >(ReturnCode::Ok);
   }
 
   ChirpArgs args;
   if (!ParseArguments(argc, argv, args)) {
-    return -1;
+    return static_cast< int >(ReturnCode::ArgParseError);
   }
   if (!ValidateArguments(args)) {
-    return -2;
+    return static_cast< int >(ReturnCode::ArgValidationError);
   }
 
+  // Register default section types.
   chirp::Init();
 
-  // chirp::binary::ChirpBinary bin;
-  // bin.Import(R"(../../examples/test.chirb)");
-  // bin.Export(R"(../../examples/exported.chirb)");
+  // Set our IO options for anything that needs to use them.
+  auto& ioOpts = chirp::binary::ChirpBinary::GetIOOptions();
+  ioOpts.Set< std::filesystem::path >("in_path", args.m_inFilepath);
+  ioOpts.Set< std::filesystem::path >("out_path", args.m_outFilepath);
+  ioOpts.Set< athena::Endian >("gx_endianness", args.m_gxEndianness);
+  ioOpts.Set< chirp::binary::ChirpOptLevel >("opt_level", args.m_optLevel);
 
-  return 0;
+  chirp::binary::ChirpBinary bin;
+  chirp::text::ChirpText txt;
+  if (args.m_inFilepath.extension() == ".chirb") {
+    if (!bin.Import(args.m_inFilepath)) {
+      return static_cast< int >(ReturnCode::BinImportError);
+    }
+
+    // TODO: populate ChirpText from ChirpBinary here.
+
+    if (!txt.Export(args.m_outFilepath)) {
+      return static_cast< int >(ReturnCode::TextExportError);
+    }
+  } else {
+    if (!txt.Import(args.m_inFilepath)) {
+      return static_cast< int >(ReturnCode::TextImportError);
+    }
+
+    // TODO: Populate ChirpBinary from ChirpText here.
+
+    if (!bin.Export(args.m_outFilepath)) {
+      return static_cast< int >(ReturnCode::BinExportError);
+    }
+  }
+
+  return static_cast< int >(ReturnCode::Ok);
 }
