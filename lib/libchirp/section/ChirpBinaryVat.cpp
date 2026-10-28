@@ -187,13 +187,11 @@ std::unique_ptr< ChirpBinarySection > ChirpBinaryVat::CreateVATSection(const u32
                                                                        const u32 elementCount,
                                                                        u16 versionMajor,
                                                                        u16 versionMinor) {
-  return std::make_unique< ChirpBinaryVat >(
-      ChirpBinaryVat(size, elementCount, versionMajor, versionMinor));
+  return std::make_unique< ChirpBinaryVat >(size, elementCount, versionMajor, versionMinor);
 }
 std::unique_ptr< ChirpBinarySection >
 ChirpBinaryVat::CreateVATSectionWithOffset(const u64 offset, const u32 size, const u32 elementCount,
                                            u16 versionMajor, u16 versionMinor) {
-  return std::make_unique< ChirpBinaryVat >(
-      ChirpBinaryVat(offset, size, elementCount, versionMajor, versionMinor));
+  return std::make_unique< ChirpBinaryVat >(offset, size, elementCount, versionMajor, versionMinor);
 }
 } // namespace chirp::binary

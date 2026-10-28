@@ -131,7 +131,7 @@ s64 ChirpBinaryJoints::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32
   return curPos;
 }
 
-ChirpJoint* ChirpBinaryJoints::CreateJoint(std::string_view name, u16 parentIndex) {
+ChirpJoint* ChirpBinaryJoints::CreateJoint(const std::string& name, u16 parentIndex) {
   std::string nameAsStr(name);
   if (m_jointNameMap.contains(nameAsStr)) {
     return m_jointNameMap[nameAsStr];
@@ -148,13 +148,12 @@ std::unique_ptr< ChirpBinarySection > ChirpBinaryJoints::CreateJNTSection(u32 si
                                                                           u32 elementCount,
                                                                           u16 versionMajor,
                                                                           u16 versionMinor) {
-  return std::make_unique< ChirpBinaryJoints >(
-      ChirpBinaryJoints(size, elementCount, versionMajor, versionMinor));
+  return std::make_unique< ChirpBinaryJoints >(size, elementCount, versionMajor, versionMinor);
 }
 std::unique_ptr< ChirpBinarySection >
 ChirpBinaryJoints::CreateJNTSectionWithOffset(u64 offset, u32 size, u32 elementCount,
                                               u16 versionMajor, u16 versionMinor) {
-  return std::make_unique< ChirpBinaryJoints >(
-      ChirpBinaryJoints(offset, size, elementCount, versionMajor, versionMinor));
+  return std::make_unique< ChirpBinaryJoints >(offset, size, elementCount, versionMajor,
+                                               versionMinor);
 }
 } // namespace chirp::binary

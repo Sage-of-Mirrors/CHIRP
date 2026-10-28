@@ -16,8 +16,8 @@ using ChirpBinaryPrimitive = std::vector< ChirpBinaryTriangle >;
 
 class ChirpMesh {
 public:
-  ChirpMesh(std::string_view name, std::string_view materialName);
-  ChirpMesh(std::string_view name, std::string_view materialName,
+  ChirpMesh(const std::string& name, const std::string& materialName);
+  ChirpMesh(const std::string& name, const std::string& materialName,
             const math::ChirpVector3& minBounds, const math::ChirpVector3& maxBounds);
 
   std::string GetName() const { return m_name; }
@@ -79,7 +79,7 @@ public:
   bool Import(SectionReader& inStream) override;
   bool Export(SectionWriter& outStream) override;
 
-  ChirpMesh* CreateMesh(std::string_view name, std::string_view materialName,
+  ChirpMesh* CreateMesh(const std::string& name, const std::string& materialName,
                         const math::ChirpVector3& minBounds, const math::ChirpVector3& maxBounds);
 
   std::vector< std::unique_ptr< ChirpMesh > >& GetMeshes() { return m_meshes; }

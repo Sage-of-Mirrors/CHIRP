@@ -8,7 +8,7 @@
 namespace chirp::gx {
 class Material {
 public:
-  Material(std::string_view name, bool colorUpdate, bool alphaUpdate, bool zCompLoc, bool dither)
+  Material(const std::string& name, bool colorUpdate, bool alphaUpdate, bool zCompLoc, bool dither)
   : m_name(name)
   , m_colorUpdate(colorUpdate)
   , m_alphaUpdate(alphaUpdate)
@@ -16,7 +16,7 @@ public:
   , m_dither(dither) {
     m_stages.reserve(16);
   }
-  Material(std::string_view name) : Material(name, false, false, false, false) {}
+  Material(const std::string& name) : Material(name, false, false, false, false) {}
 
   u16 GetStageCount() const { return m_stages.size(); }
 

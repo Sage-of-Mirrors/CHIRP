@@ -154,13 +154,12 @@ s64 ChirpBinarySkin::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 d
 
 std::unique_ptr< ChirpBinarySection >
 ChirpBinarySkin::CreateSKNSection(u32 size, u32 elementCount, u16 versionMajor, u16 versionMinor) {
-  return std::make_unique< ChirpBinarySkin >(
-      ChirpBinarySkin(size, elementCount, versionMajor, versionMinor));
+  return std::make_unique< ChirpBinarySkin >(size, elementCount, versionMajor, versionMinor);
 }
 std::unique_ptr< ChirpBinarySection >
 ChirpBinarySkin::CreateSKNSectionWithOffset(u64 offset, u32 size, u32 elementCount,
                                             u16 versionMajor, u16 versionMinor) {
-  return std::make_unique< ChirpBinarySkin >(
-      ChirpBinarySkin(offset, size, elementCount, versionMajor, versionMinor));
+  return std::make_unique< ChirpBinarySkin >(offset, size, elementCount, versionMajor,
+                                             versionMinor);
 }
 } // namespace chirp::binary

@@ -5,9 +5,9 @@
 #include <cmath>
 
 namespace chirp::binary {
-ChirpMesh::ChirpMesh(std::string_view name, std::string_view materialName)
+ChirpMesh::ChirpMesh(const std::string& name, const std::string& materialName)
 : m_name(name), m_materialName(materialName) {}
-ChirpMesh::ChirpMesh(std::string_view name, std::string_view materialName,
+ChirpMesh::ChirpMesh(const std::string& name, const std::string& materialName,
                      const math::ChirpVector3& minBounds, const math::ChirpVector3& maxBounds)
 : m_name(name), m_materialName(materialName), m_aabb(minBounds, maxBounds) {}
 
@@ -209,7 +209,7 @@ s64 ChirpBinaryGeo::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 da
   return curPos;
 }
 
-ChirpMesh* ChirpBinaryGeo::CreateMesh(std::string_view name, std::string_view materialName,
+ChirpMesh* ChirpBinaryGeo::CreateMesh(const std::string& name, const std::string& materialName,
                                       const math::ChirpVector3& minBounds,
                                       const math::ChirpVector3& maxBounds) {
   auto newMesh = std::make_unique< ChirpMesh >(name, materialName, minBounds, maxBounds);
@@ -222,13 +222,11 @@ std::unique_ptr< ChirpBinarySection > ChirpBinaryGeo::CreateGEOSection(const u32
                                                                        const u32 elementCount,
                                                                        u16 versionMajor,
                                                                        u16 versionMinor) {
-  return std::make_unique< ChirpBinaryGeo >(
-      ChirpBinaryGeo(size, elementCount, versionMajor, versionMinor));
+  return std::make_unique< ChirpBinaryGeo >(size, elementCount, versionMajor, versionMinor);
 }
 std::unique_ptr< ChirpBinarySection >
 ChirpBinaryGeo::CreateGEOSectionWithOffset(const u64 offset, const u32 size, const u32 elementCount,
                                            u16 versionMajor, u16 versionMinor) {
-  return std::make_unique< ChirpBinaryGeo >(
-      ChirpBinaryGeo(offset, size, elementCount, versionMajor, versionMinor));
+  return std::make_unique< ChirpBinaryGeo >(offset, size, elementCount, versionMajor, versionMinor);
 }
 } // namespace chirp::binary

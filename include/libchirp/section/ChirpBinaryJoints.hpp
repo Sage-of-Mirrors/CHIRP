@@ -9,7 +9,7 @@
 namespace chirp::binary {
 class ChirpJoint {
 public:
-  ChirpJoint(std::string_view name, u16 parentIndex) : m_name(name), m_parentIndex(parentIndex) {}
+  ChirpJoint(const std::string& name, u16 parentIndex) : m_name(name), m_parentIndex(parentIndex) {}
 
   std::string GetName() const { return m_name; }
   u16 GetParentIndex() const { return m_parentIndex; }
@@ -36,13 +36,12 @@ public:
   bool Import(SectionReader& inStream) override;
   bool Export(SectionWriter& outStream) override;
 
-  ChirpJoint* CreateJoint(std::string_view name,
+  ChirpJoint* CreateJoint(const std::string& name,
                           u16 parentIndex = std::numeric_limits< u16 >::max());
 
   std::vector< std::unique_ptr< ChirpJoint > >& GetJoints() { return m_joints; }
-  ChirpJoint* GetJoint(std::string_view name) {
-    std::string nameAsStr(name);
-    return m_jointNameMap.contains(nameAsStr) ? m_jointNameMap[nameAsStr] : nullptr;
+  ChirpJoint* GetJoint(const std::string& name) {
+    return m_jointNameMap.contains(name) ? m_jointNameMap[name] : nullptr;
   }
   ChirpJoint* GetJoint(u16 index) {
     return index < m_joints.size() ? m_joints[index].get() : nullptr;

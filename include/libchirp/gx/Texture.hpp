@@ -12,7 +12,7 @@ public:
   using ChirpPaletteData = std::vector< math::ChirpColor >;
   using ChirpImageData = std::vector< u8 >;
 
-  ChirpTexture(std::string_view name, u16 width, u16 height, gx::TexFmt format,
+  ChirpTexture(const std::string& name, u16 width, u16 height, gx::TexFmt format,
                gx::TexFmt paletteFormat, u16 mipCount, gx::TexWrapMode wrapS, gx::TexWrapMode wrapT,
                gx::TexFilter minFilter, gx::TexFilter magFilter, gx::Anisotropy aniso, f32 minLod,
                f32 maxLod, f32 lodBias, bool biasClamp, bool edgeLod)
@@ -33,7 +33,7 @@ public:
   , m_biasClamp(biasClamp)
   , m_edgeLod(edgeLod) {}
 
-  ChirpTexture(std::string_view name, u16 width, u16 height, gx::TexFmt format)
+  ChirpTexture(const std::string& name, u16 width, u16 height, gx::TexFmt format)
   : ChirpTexture(name, width, height, format, gx::TexFmt::RGBA8, 1, gx::TexWrapMode::Clamp,
                  gx::TexWrapMode::Clamp, gx::TexFilter::Linear, gx::TexFilter::Linear,
                  gx::Anisotropy::Aniso_1, 0.0f, 1.0f, 0.0f, false, false) {}

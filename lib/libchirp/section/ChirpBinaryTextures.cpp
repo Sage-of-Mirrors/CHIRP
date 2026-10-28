@@ -102,13 +102,12 @@ std::unique_ptr< ChirpBinarySection > ChirpBinaryTextures::CreateTEXSection(u32 
                                                                             u32 elementCount,
                                                                             u16 versionMajor,
                                                                             u16 versionMinor) {
-  return std::make_unique< ChirpBinaryTextures >(
-      ChirpBinaryTextures(size, elementCount, versionMajor, versionMinor));
+  return std::make_unique< ChirpBinaryTextures >(size, elementCount, versionMajor, versionMinor);
 }
 std::unique_ptr< ChirpBinarySection >
 ChirpBinaryTextures::CreateTEXSectionWithOffset(u64 offset, u32 size, u32 elementCount,
                                                 u16 versionMajor, u16 versionMinor) {
-  return std::make_unique< ChirpBinaryTextures >(
-      ChirpBinaryTextures(offset, size, elementCount, versionMajor, versionMinor));
+  return std::make_unique< ChirpBinaryTextures >(offset, size, elementCount, versionMajor,
+                                                 versionMinor);
 }
 } // namespace chirp::binary

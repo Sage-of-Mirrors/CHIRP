@@ -16,8 +16,8 @@ public:
   bool Import(SectionReader& inStream) override;
   bool Export(SectionWriter& outStream) override;
 
-  gx::Material* GetMaterial(std::string_view name) const;
-  gx::Material* CreateMaterial(std::string_view name, bool colorUpdate = false,
+  gx::Material* GetMaterial(const std::string& name) const;
+  gx::Material* CreateMaterial(const std::string& name, bool colorUpdate = false,
                                bool alphaUpdate = false, bool zCompLoc = false,
                                bool dither = false);
 

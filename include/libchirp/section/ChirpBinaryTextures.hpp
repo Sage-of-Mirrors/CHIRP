@@ -14,14 +14,13 @@ public:
   bool Import(SectionReader& inStream) override;
   bool Export(SectionWriter& outStream) override;
 
-  bool HasTexture(std::string_view name) const { return m_textures.contains(std::string(name)); }
+  bool HasTexture(const std::string& name) const { return m_textures.contains(std::string(name)); }
 
-  gx::ChirpTexture* GetTexture(std::string_view name) const {
-    std::string nameAsStr(name);
-    return m_textures.contains(nameAsStr) ? m_textures.at(nameAsStr).get() : nullptr;
+  gx::ChirpTexture* GetTexture(const std::string& name) const {
+    return m_textures.contains(name) ? m_textures.at(name).get() : nullptr;
   }
 
-  gx::ChirpTexture* CreateTexture(std::string_view name, u16 width, u16 height, gx::TexFmt format,
+  gx::ChirpTexture* CreateTexture(const std::string& name, u16 width, u16 height, gx::TexFmt format,
                                   gx::TexFmt paletteFormat = gx::TexFmt::RGBA8, u16 mipCount = 1,
                                   gx::TexWrapMode wrapS = gx::TexWrapMode::Clamp,
                                   gx::TexWrapMode wrapT = gx::TexWrapMode::Clamp,
@@ -30,15 +29,14 @@ public:
                                   gx::Anisotropy aniso = gx::Anisotropy::Aniso_1, f32 minLod = 0.0f,
                                   f32 maxLod = 0.0f, f32 lodBias = 0.0f, bool biasClamp = false,
                                   bool edgeLod = false) {
-    std::string nameAsStr(name);
-    if (m_textures.contains(nameAsStr)) {
+    if (m_textures.contains(name)) {
       return nullptr;
     }
 
-    m_textures[nameAsStr] = std::make_unique< gx::ChirpTexture >(
+    m_textures[name] = std::make_unique< gx::ChirpTexture >(
         name, width, height, format, paletteFormat, mipCount, wrapS, wrapT, minFilter, maxFilter,
         aniso, minLod, maxLod, lodBias, biasClamp, edgeLod);
-    return m_textures[nameAsStr].get();
+    return m_textures[name].get();
   }
 
   static std::unique_ptr< ChirpBinarySection > CreateTEXSection(u32 size, u32 elementCount,

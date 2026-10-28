@@ -143,8 +143,8 @@ bool ChirpBinaryMaterials::Import(SectionReader& inStream) {
 
 bool ChirpBinaryMaterials::Export(SectionWriter& outStream) { return true; }
 
-gx::Material* ChirpBinaryMaterials::GetMaterial(std::string_view name) const {
-  if (auto itr = m_materials.find(std::string(name)); itr != m_materials.end()) {
+gx::Material* ChirpBinaryMaterials::GetMaterial(const std::string& name) const {
+  if (auto itr = m_materials.find(name); itr != m_materials.end()) {
     return itr->second.get();
   }
 
@@ -154,20 +154,18 @@ gx::Material* ChirpBinaryMaterials::GetMaterial(std::string_view name) const {
   return nullptr;
 }
 
-gx::Material* ChirpBinaryMaterials::CreateMaterial(std::string_view name, bool colorUpdate,
+gx::Material* ChirpBinaryMaterials::CreateMaterial(const std::string& name, bool colorUpdate,
                                                    bool alphaUpdate, bool zCompLoc, bool dither) {
-  std::string nameAsStr(name);
-
-  if (m_materials.contains(nameAsStr)) {
+  if (m_materials.contains(name)) {
     std::cerr << "Attempted to add material named \"" << name
               << "\" to ChirpBinaryMaterials that already had a material with that name."
               << std::endl;
     return nullptr;
   }
 
-  m_materials[nameAsStr] =
+  m_materials[name] =
       std::make_unique< gx::Material >(name, colorUpdate, alphaUpdate, zCompLoc, dither);
-  return m_materials[nameAsStr].get();
+  return m_materials[name].get();
 }
 
 void ChirpBinaryMaterials::ReadOffsets(SectionReader& sectionReader) {
@@ -303,13 +301,12 @@ std::unique_ptr< ChirpBinarySection > ChirpBinaryMaterials::CreateMATSection(u32
                                                                              u32 elementCount,
                                                                              u16 versionMajor,
                                                                              u16 versionMinor) {
-  return std::make_unique< ChirpBinaryMaterials >(
-      ChirpBinaryMaterials(size, elementCount, versionMajor, versionMinor));
+  return std::make_unique< ChirpBinaryMaterials >(size, elementCount, versionMajor, versionMinor);
 }
 std::unique_ptr< ChirpBinarySection >
 ChirpBinaryMaterials::CreateMATSectionWithOffset(u64 offset, u32 size, u32 elementCount,
                                                  u16 versionMajor, u16 versionMinor) {
-  return std::make_unique< ChirpBinaryMaterials >(
-      ChirpBinaryMaterials(offset, size, elementCount, versionMajor, versionMinor));
+  return std::make_unique< ChirpBinaryMaterials >(offset, size, elementCount, versionMajor,
+                                                  versionMinor);
 }
 } // namespace chirp::binary
