@@ -11,14 +11,22 @@ namespace chirp {
 class ChirpKeyValue;
 
 using ChirpKeyValueTuple = std::unordered_map< std::string, ChirpKeyValue >;
+using SharedChirpKeyValueTuple = std::shared_ptr< ChirpKeyValueTuple >;
 using ChirpKeyValueVariant =
-    std::variant< std::nullptr_t, bool, s64, double, std::string, ChirpKeyValueTuple* >;
+    std::variant< std::nullptr_t, bool, s64, double, std::string, SharedChirpKeyValueTuple >;
+
+enum class ChirpKeyValueType : u8 { Null, Bool, S64, Double, String, Tuple };
 
 class ChirpKeyValue {
 public:
   ChirpKeyValue(const std::string& key) : m_key(key), m_value(nullptr) {}
   ChirpKeyValue() : ChirpKeyValue("") {}
-  ~ChirpKeyValue();
+
+  std::string GetKey() { return m_key; }
+  ChirpKeyValueVariant& GetVariant() { return m_value; }
+
+  ChirpKeyValueType GetType();
+  u16 GetSize();
 
   // Main get template. If the underlying value's type matches the desired type, returns the value.
   // Otherwise, returns nullopt.

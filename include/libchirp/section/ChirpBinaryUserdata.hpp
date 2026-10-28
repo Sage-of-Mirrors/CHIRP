@@ -29,11 +29,15 @@ protected:
   s64 SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset = 0) override;
 
 private:
+  static constexpr uint32_t kBoolsOffsetPos{0x14};
+  static constexpr uint32_t kS64sOffsetPos{0x18};
+  static constexpr uint32_t kDoublesOffsetPos{0x1C};
+  static constexpr uint32_t kStringsOffsetPos{0x20};
+
   enum class ChunkId : u8 { KeyValues, Bools, S64s, Doubles, Strings };
-  enum class ValueType : u8 { Null, Bool, S64, Double, String, Tuple };
 
   void ReadOffsets(SectionReader& sectionReader);
-  void ReadKeyValue(SectionReader& sectionReader, ChirpKeyValueTuple& parentTuple);
+  void ReadKeyValue(SectionReader& sectionReader, SharedChirpKeyValueTuple parentTuple);
 
   u32 m_keyValuesOffset{0};
   u32 m_boolsOffset{0};
