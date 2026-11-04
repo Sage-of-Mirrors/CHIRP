@@ -41,7 +41,7 @@ bool ChirpBinaryVat::Import(SectionReader& inStream) {
     ReadVertexAttributeData(inStream, attrCount, newAttribute);
     inStream.setEndian(athena::Endian::Little);
 
-    inStream.seek(returnPos);
+    inStream.seek(returnPos, athena::SeekOrigin::Begin);
   }
 
   return true;

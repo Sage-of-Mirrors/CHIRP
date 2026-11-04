@@ -50,6 +50,10 @@ protected:
   s64 SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset = 0) override;
 
 private:
+  static constexpr uint32_t kImageDataOffsetPos{0x10};
+  static constexpr uint32_t kPaletteDataOffsetPos{0x14};
+  static constexpr uint32_t kNameTableOffsetPos{0x18};
+
   enum class ChunkId : u8 { ImageData, PaletteData, TextureNames };
 
   u32 m_imageDataOffset{0};
