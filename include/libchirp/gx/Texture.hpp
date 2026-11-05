@@ -9,7 +9,7 @@
 namespace chirp::gx {
 class ChirpTexture {
 public:
-  using ChirpPaletteData = std::vector< math::ChirpColor >;
+  using ChirpPaletteData = std::vector< u8 >;
   using ChirpImageData = std::vector< u8 >;
 
   ChirpTexture(const std::string& name, u16 width, u16 height, gx::TexFmt format,
