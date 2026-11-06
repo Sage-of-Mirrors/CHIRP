@@ -13,9 +13,10 @@ public:
   using ChirpImageData = std::vector< u8 >;
 
   ChirpTexture(const std::string& name, u16 width, u16 height, gx::TexFmt format,
-               gx::TexFmt paletteFormat, u16 mipCount, gx::TexWrapMode wrapS, gx::TexWrapMode wrapT,
-               gx::TexFilter minFilter, gx::TexFilter magFilter, gx::Anisotropy aniso, f32 minLod,
-               f32 maxLod, f32 lodBias, bool biasClamp, bool edgeLod)
+               gx::PaletteFmt paletteFormat, u16 mipCount, gx::TexWrapMode wrapS,
+               gx::TexWrapMode wrapT, gx::TexFilter minFilter, gx::TexFilter magFilter,
+               gx::Anisotropy aniso, f32 minLod, f32 maxLod, f32 lodBias, bool biasClamp,
+               bool edgeLod)
   : m_name(name)
   , m_width(width)
   , m_height(height)
@@ -34,7 +35,7 @@ public:
   , m_edgeLod(edgeLod) {}
 
   ChirpTexture(const std::string& name, u16 width, u16 height, gx::TexFmt format)
-  : ChirpTexture(name, width, height, format, gx::TexFmt::RGBA8, 1, gx::TexWrapMode::Clamp,
+  : ChirpTexture(name, width, height, format, gx::PaletteFmt::RGB565, 1, gx::TexWrapMode::Clamp,
                  gx::TexWrapMode::Clamp, gx::TexFilter::Linear, gx::TexFilter::Linear,
                  gx::Anisotropy::Aniso_1, 0.0f, 1.0f, 0.0f, false, false) {}
 
@@ -44,7 +45,7 @@ public:
   u16 GetMipCount() const { return m_mipCount; }
 
   gx::TexFmt GetFormat() const { return m_format; }
-  gx::TexFmt GetPaletteFormat() const { return m_paletteFormat; }
+  gx::PaletteFmt GetPaletteFormat() const { return m_paletteFormat; }
   gx::TexWrapMode GetWrapS() const { return m_wrapS; }
   gx::TexWrapMode GetWrapT() const { return m_wrapT; }
   gx::TexFilter GetMinFilter() const { return m_minFilter; }
@@ -79,7 +80,7 @@ private:
   u16 m_mipCount;
 
   gx::TexFmt m_format;
-  gx::TexFmt m_paletteFormat;
+  gx::PaletteFmt m_paletteFormat;
   gx::TexWrapMode m_wrapS;
   gx::TexWrapMode m_wrapT;
   gx::TexFilter m_minFilter;

@@ -453,6 +453,8 @@ enum class TexFmt : u8 {
   CMPR = 0xE
 };
 
+enum class PaletteFmt : u8 { IA8, RGB565, RGB5A3 };
+
 enum class Anisotropy {
   Aniso_1,
   Aniso_2,

@@ -21,8 +21,8 @@ public:
   }
 
   gx::ChirpTexture* CreateTexture(const std::string& name, u16 width, u16 height, gx::TexFmt format,
-                                  gx::TexFmt paletteFormat = gx::TexFmt::RGBA8, u16 mipCount = 1,
-                                  gx::TexWrapMode wrapS = gx::TexWrapMode::Clamp,
+                                  gx::PaletteFmt paletteFormat = gx::PaletteFmt::IA8,
+                                  u16 mipCount = 1, gx::TexWrapMode wrapS = gx::TexWrapMode::Clamp,
                                   gx::TexWrapMode wrapT = gx::TexWrapMode::Clamp,
                                   gx::TexFilter minFilter = gx::TexFilter::Linear,
                                   gx::TexFilter maxFilter = gx::TexFilter::Linear,

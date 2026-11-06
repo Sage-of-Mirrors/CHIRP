@@ -2,6 +2,104 @@
 
 #include <athena/VectorWriter.hpp>
 
+namespace {
+struct TextureEntry {
+  // u16 size values.
+  /*0x00*/ u16 m_nameSize;
+  /*0x02*/ u16 m_width;
+  /*0x04*/ u16 m_height;
+  /*0x06*/ u16 m_paletteColorCount; // ChirpBinary handles palette data as a single block of bytes,
+                                    // but we maintain this value for others to use.
+  /*0x08*/ u16 m_mipCount;          // MIP dimensions calculated by (dim / 2^mipIndex).
+
+  // u8 config values.
+  /*0x0A*/ chirp::gx::TexFmt m_imageFormat;
+  /*0x0B*/ chirp::gx::PaletteFmt m_paletteFormat;
+  /*0x0C*/ chirp::gx::TexWrapMode m_wrapS;
+  /*0x0D*/ chirp::gx::TexWrapMode m_wrapT;
+  /*0x0E*/ chirp::gx::TexFilter m_minFilter;
+  /*0x0F*/ chirp::gx::TexFilter m_magFilter;
+  /*0x10*/ chirp::gx::Anisotropy m_anisotropy;
+
+  // u8 padding for alignment.
+  /*0x11*/ u8 m_padding0;
+
+  // LOD values.
+  /*0x12*/ bool m_lodBiasClamp;
+  /*0x13*/ bool m_edgeLod;
+  /*0x14*/ f32 m_minLod;  // Range is [0.0..10.0].
+  /*0x18*/ f32 m_maxLod;  // Range is [0.0..10.0].
+  /*0x1C*/ f32 m_lodBias; // Range is [-4.0..4).
+
+  // u32 size and offset values.
+  /*0x20*/ u32 m_nameOffset;
+  /*0x24*/ u32 m_imageDataSize;
+  /*0x28*/ u32 m_imageDataOffset;
+  /*0x2C*/ u32 m_paletteDataSize;
+  /*0x30*/ u32 m_paletteDataOffset;
+};
+
+void ReadTextureEntry(athena::io::IStreamReader& inStream, TextureEntry& outEntry) {
+  outEntry.m_nameSize = inStream.readUint16();
+  outEntry.m_width = inStream.readUint16();
+  outEntry.m_height = inStream.readUint16();
+  outEntry.m_paletteColorCount = inStream.readUint16();
+  outEntry.m_mipCount = inStream.readUint16();
+
+  outEntry.m_imageFormat = static_cast< chirp::gx::TexFmt >(inStream.readUByte());
+  outEntry.m_paletteFormat = static_cast< chirp::gx::PaletteFmt >(inStream.readUByte());
+  outEntry.m_wrapS = static_cast< chirp::gx::TexWrapMode >(inStream.readUByte());
+  outEntry.m_wrapT = static_cast< chirp::gx::TexWrapMode >(inStream.readUByte());
+  outEntry.m_minFilter = static_cast< chirp::gx::TexFilter >(inStream.readUByte());
+  outEntry.m_magFilter = static_cast< chirp::gx::TexFilter >(inStream.readUByte());
+  outEntry.m_anisotropy = static_cast< chirp::gx::Anisotropy >(inStream.readUByte());
+
+  outEntry.m_padding0 = inStream.readUByte();
+
+  outEntry.m_lodBiasClamp = inStream.readBool();
+  outEntry.m_edgeLod = inStream.readBool();
+  outEntry.m_minLod = inStream.readFloat();
+  outEntry.m_maxLod = inStream.readFloat();
+  outEntry.m_lodBias = inStream.readFloat();
+
+  outEntry.m_nameOffset = inStream.readUint32();
+  outEntry.m_imageDataSize = inStream.readUint32();
+  outEntry.m_imageDataOffset = inStream.readUint32();
+  outEntry.m_paletteDataSize = inStream.readUint32();
+  outEntry.m_paletteDataOffset = inStream.readUint32();
+}
+
+void WriteTextureEntry(athena::io::IStreamWriter& outStream, const TextureEntry& entry) {
+  outStream.writeUint16(entry.m_nameSize);
+  outStream.writeUint16(entry.m_width);
+  outStream.writeUint16(entry.m_height);
+  outStream.writeUint16(entry.m_paletteColorCount);
+  outStream.writeUint16(entry.m_mipCount);
+
+  outStream.writeUByte(static_cast< u8 >(entry.m_imageFormat));
+  outStream.writeUByte(static_cast< u8 >(entry.m_paletteFormat));
+  outStream.writeUByte(static_cast< u8 >(entry.m_wrapS));
+  outStream.writeUByte(static_cast< u8 >(entry.m_wrapT));
+  outStream.writeUByte(static_cast< u8 >(entry.m_minFilter));
+  outStream.writeUByte(static_cast< u8 >(entry.m_magFilter));
+  outStream.writeUByte(static_cast< u8 >(entry.m_anisotropy));
+
+  outStream.writeUByte(0);
+
+  outStream.writeBool(entry.m_lodBiasClamp);
+  outStream.writeBool(entry.m_edgeLod);
+  outStream.writeFloat(entry.m_minLod);
+  outStream.writeFloat(entry.m_maxLod);
+  outStream.writeFloat(entry.m_lodBias);
+
+  outStream.writeUint32(entry.m_nameOffset);
+  outStream.writeUint32(entry.m_imageDataSize);
+  outStream.writeUint32(entry.m_imageDataOffset);
+  outStream.writeUint32(entry.m_paletteDataSize);
+  outStream.writeUint32(entry.m_paletteDataOffset);
+}
+} // namespace
+
 namespace chirp::binary {
 ChirpBinaryTextures::ChirpBinaryTextures() : ChirpBinarySection() {}
 ChirpBinaryTextures::ChirpBinaryTextures(u32 size, u32 elementCount, u16 versionMajor,
@@ -18,53 +116,32 @@ bool ChirpBinaryTextures::Import(SectionReader& inStream) {
   inStream.seekAlign16();
 
   for (uint32_t i = 0; i < m_elementCount; i++) {
-    u16 nameSize = inStream.readUint16();
-    u16 width = inStream.readUint16();
-    u16 height = inStream.readUint16();
-    u16 mipCount = inStream.readUint16();
-    u16 paletteCount = inStream.readUint16();
+    TextureEntry curEntry;
+    ReadTextureEntry(inStream, curEntry);
 
-    gx::TexFmt format = static_cast< gx::TexFmt >(inStream.readUByte());
-    gx::TexWrapMode wrapS = static_cast< gx::TexWrapMode >(inStream.readUByte());
-    gx::TexWrapMode wrapT = static_cast< gx::TexWrapMode >(inStream.readUByte());
-    gx::TexFilter minFilter = static_cast< gx::TexFilter >(inStream.readUByte());
-    gx::TexFilter magFilter = static_cast< gx::TexFilter >(inStream.readUByte());
-    gx::Anisotropy aniso = static_cast< gx::Anisotropy >(inStream.readUByte());
-
-    f32 minLod = inStream.readFloat();
-    f32 maxLod = inStream.readFloat();
-    f32 lodBias = inStream.readFloat();
-    bool biasClamp = inStream.readBool();
-    bool edgeLod = inStream.readBool();
-    gx::TexFmt paletteFormat = static_cast< gx::TexFmt >(inStream.readUByte());
-    inStream.seekAlign4();
-
-    u32 nameOffset = inStream.readUint32();
-    u32 paletteOffset = inStream.readUint32();
-    u32 dataSize = inStream.readUint32();
-    u32 dataOffset = inStream.readUint32();
-
-    s64 nextTexPos = SeekToChunk(inStream, static_cast< u8 >(ChunkId::TextureNames), nameOffset);
+    s64 nextTexPos =
+        SeekToChunk(inStream, static_cast< u8 >(ChunkId::TextureNames), curEntry.m_nameOffset);
 
     gx::ChirpTexture* newTex = CreateTexture(
-        inStream.readString(nameSize), width, height, format, paletteFormat, mipCount, wrapS, wrapT,
-        minFilter, magFilter, aniso, minLod, maxLod, lodBias, biasClamp, edgeLod);
+        inStream.readString(curEntry.m_nameSize), curEntry.m_width, curEntry.m_height,
+        curEntry.m_imageFormat, curEntry.m_paletteFormat, curEntry.m_mipCount, curEntry.m_wrapS,
+        curEntry.m_wrapT, curEntry.m_minFilter, curEntry.m_magFilter, curEntry.m_anisotropy,
+        curEntry.m_minLod, curEntry.m_maxLod, curEntry.m_lodBias, curEntry.m_lodBiasClamp,
+        curEntry.m_edgeLod);
 
-    SeekToChunk(inStream, static_cast< u8 >(ChunkId::ImageData), dataOffset);
+    SeekToChunk(inStream, static_cast< u8 >(ChunkId::ImageData), curEntry.m_imageDataOffset);
 
     auto& imgData = newTex->GetImageData();
-    imgData.resize(dataSize);
-    inStream.readUBytesToBuf(imgData.data(), dataSize);
+    imgData.resize(curEntry.m_imageDataSize);
+    inStream.readUBytesToBuf(imgData.data(), curEntry.m_imageDataSize);
 
     // TODO: Retool everything here so that palettes are just chunks of memory like image data is.
-    if (paletteCount) {
-      SeekToChunk(inStream, static_cast< u8 >(ChunkId::PaletteData), paletteOffset);
+    if (curEntry.m_paletteDataSize) {
+      SeekToChunk(inStream, static_cast< u8 >(ChunkId::PaletteData), m_paletteDataOffset);
 
       auto& paletteData = newTex->GetPaletteData();
-      for (u32 c = 0; c < paletteCount; c++) {
-        paletteData.emplace_back(inStream.readUByte(), inStream.readUByte(), inStream.readUByte(),
-                                 inStream.readUByte());
-      }
+      paletteData.resize(curEntry.m_paletteDataSize);
+      inStream.readUBytesToBuf(paletteData.data(), curEntry.m_paletteDataSize);
     }
 
     inStream.seek(nextTexPos, athena::SeekOrigin::Begin);
@@ -93,43 +170,48 @@ bool ChirpBinaryTextures::Export(SectionWriter& outStream) {
   nameWriter.setEndian(athena::Endian::Little);
 
   for (auto& [name, tex] : m_textures) {
-    outStream.writeUint16(static_cast< u16 >(name.size()) + 1);
-    outStream.writeUint16(tex->GetWidth());
-    outStream.writeUint16(tex->GetHeight());
-    outStream.writeUint16(tex->GetMipCount());
+    TextureEntry curEntry;
+    curEntry.m_nameSize = static_cast< u16 >(name.size()) + 1;
+    curEntry.m_width = tex->GetWidth();
+    curEntry.m_height = tex->GetHeight();
+    curEntry.m_mipCount = tex->GetMipCount();
+    curEntry.m_paletteColorCount = 0;
 
-    auto& paletteData = tex->GetPaletteData();
-    outStream.writeUint16(static_cast< u16 >(paletteData.size()));
+    curEntry.m_imageFormat = tex->GetFormat();
+    curEntry.m_paletteFormat = tex->GetPaletteFormat();
+    curEntry.m_wrapS = tex->GetWrapS();
+    curEntry.m_wrapT = tex->GetWrapT();
+    curEntry.m_minFilter = tex->GetMinFilter();
+    curEntry.m_magFilter = tex->GetMagFilter();
+    curEntry.m_anisotropy = tex->GetAnisotropy();
 
-    outStream.writeUByte(static_cast< u8 >(tex->GetFormat()));
-    outStream.writeUByte(static_cast< u8 >(tex->GetWrapS()));
-    outStream.writeUByte(static_cast< u8 >(tex->GetWrapT()));
-    outStream.writeUByte(static_cast< u8 >(tex->GetMinFilter()));
-    outStream.writeUByte(static_cast< u8 >(tex->GetMagFilter()));
-    outStream.writeUByte(static_cast< u8 >(tex->GetAnisotropy()));
+    curEntry.m_padding0 = 0;
 
-    outStream.writeFloat(tex->GetMinLod());
-    outStream.writeFloat(tex->GetMaxLod());
-    outStream.writeFloat(tex->GetLodBias());
-    outStream.writeBool(tex->GetBiasClamp());
-    outStream.writeBool(tex->GetEdgeLod());
-    outStream.writeUByte(static_cast< u8 >(tex->GetPaletteFormat()));
-    outStream.writeAlign4();
+    curEntry.m_lodBiasClamp = tex->GetBiasClamp();
+    curEntry.m_edgeLod = tex->GetEdgeLod();
+    curEntry.m_minLod = tex->GetMinLod();
+    curEntry.m_maxLod = tex->GetMaxLod();
+    curEntry.m_lodBias = tex->GetLodBias();
 
-    outStream.writeUint32(static_cast< u32 >(nameWriter.position()));
+    curEntry.m_nameOffset = static_cast< u32 >(nameWriter.position());
     nameWriter.writeString(name);
 
+    auto& imageData = tex->GetImageData();
+    curEntry.m_imageDataSize = static_cast< u32 >(imageData.size());
+    curEntry.m_imageDataOffset = static_cast< u32 >(imageWriter.position());
+    imageWriter.writeUBytes(imageData.data(), imageData.size());
+
+    auto& paletteData = tex->GetPaletteData();
     if (!paletteData.empty()) {
-      outStream.writeUint32(static_cast< u32 >(paletteWriter.position()));
+      curEntry.m_paletteDataSize = static_cast< u32 >(paletteData.size());
+      curEntry.m_paletteDataOffset = static_cast< u32 >(paletteWriter.position());
       paletteWriter.writeUBytes(paletteData.data(), paletteData.size());
     } else {
-      outStream.writeUint32(0);
+      curEntry.m_paletteDataSize = 0;
+      curEntry.m_paletteDataOffset = 0;
     }
 
-    auto& imageData = tex->GetImageData();
-    outStream.writeUint32(static_cast< u32 >(imageData.size()));
-    outStream.writeUint32(static_cast< u32 >(imageWriter.position()));
-    imageWriter.writeUBytes(imageData.data(), imageData.size());
+    WriteTextureEntry(outStream, curEntry);
   }
 
   // Write image data.
