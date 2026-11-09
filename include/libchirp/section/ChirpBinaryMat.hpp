@@ -1,11 +1,11 @@
 #pragma once
 
 #include "libchirp/ChirpCommon.hpp"
-#include "libchirp/gx/Material.hpp"
+#include "libchirp/gx/material/Material.hpp"
 #include "libchirp/section/ChirpBinarySection.hpp"
 
 namespace chirp::binary {
-using ChirpMaterialMap = std::unordered_map< std::string, std::unique_ptr< gx::Material > >;
+using ChirpMaterialMap = std::unordered_map< std::string, std::unique_ptr< gx::material::Material > >;
 
 class ChirpBinaryMaterials : public ChirpBinarySection {
 public:
@@ -16,8 +16,8 @@ public:
   bool Import(SectionReader& inStream) override;
   bool Export(SectionWriter& outStream) override;
 
-  gx::Material* GetMaterial(const std::string& name) const;
-  gx::Material* CreateMaterial(const std::string& name, bool colorUpdate = false,
+  gx::material::Material* GetMaterial(const std::string& name) const;
+  gx::material::Material* CreateMaterial(const std::string& name, bool colorUpdate = false,
                                bool alphaUpdate = false, bool zCompLoc = false,
                                bool dither = false);
 

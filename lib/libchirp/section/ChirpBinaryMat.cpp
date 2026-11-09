@@ -132,169 +132,174 @@ ChirpBinaryMaterials::ChirpBinaryMaterials(u64 offset, u32 size, u32 elementCoun
 : ChirpBinarySection(offset, size, elementCount, versionMajor, versionMinor) {}
 
 bool ChirpBinaryMaterials::Import(SectionReader& inStream) {
-  ReadOffsets(inStream);
+  // ReadOffsets(inStream);
 
-  for (u32 i = 0; i < m_elementCount; i++) {
-    ReadMaterial(inStream);
-  }
+  // for (u32 i = 0; i < m_elementCount; i++) {
+  //   ReadMaterial(inStream);
+  // }
 
   return true;
 }
 
 bool ChirpBinaryMaterials::Export(SectionWriter& outStream) { return true; }
 
-gx::Material* ChirpBinaryMaterials::GetMaterial(const std::string& name) const {
-  if (auto itr = m_materials.find(name); itr != m_materials.end()) {
-    return itr->second.get();
-  }
+gx::material::Material* ChirpBinaryMaterials::GetMaterial(const std::string& name) const {
+  // if (auto itr = m_materials.find(name); itr != m_materials.end()) {
+  //   return itr->second.get();
+  // }
 
-  std::cerr << "Attempted to get a material named \"" << name
-            << "\" from a ChirpBinaryMaterials that did not have a material with that name."
-            << std::endl;
+  // std::cerr << "Attempted to get a material named \"" << name
+  //           << "\" from a ChirpBinaryMaterials that did not have a material with that name."
+  //           << std::endl;
   return nullptr;
 }
 
-gx::Material* ChirpBinaryMaterials::CreateMaterial(const std::string& name, bool colorUpdate,
-                                                   bool alphaUpdate, bool zCompLoc, bool dither) {
-  if (m_materials.contains(name)) {
-    std::cerr << "Attempted to add material named \"" << name
-              << "\" to ChirpBinaryMaterials that already had a material with that name."
-              << std::endl;
-    return nullptr;
-  }
+gx::material::Material* ChirpBinaryMaterials::CreateMaterial(const std::string& name,
+                                                             bool colorUpdate, bool alphaUpdate,
+                                                             bool zCompLoc, bool dither) {
+  return nullptr;
+  // if (m_materials.contains(name)) {
+  //   std::cerr << "Attempted to add material named \"" << name
+  //             << "\" to ChirpBinaryMaterials that already had a material with that name."
+  //             << std::endl;
+  //   return nullptr;
+  // }
 
-  m_materials[name] =
-      std::make_unique< gx::Material >(name, colorUpdate, alphaUpdate, zCompLoc, dither);
-  return m_materials[name].get();
+  // m_materials[name] =
+  //     std::make_unique< gx::material::Material >(name, colorUpdate, alphaUpdate, zCompLoc,
+  //     dither);
+  // return m_materials[name].get();
 }
 
 void ChirpBinaryMaterials::ReadOffsets(SectionReader& sectionReader) {
-  m_materialNamesOffset = sectionReader.readUint32();  // 0x10
-  m_alphaComparesOffset = sectionReader.readUint32();  // 0x14
-  m_blendModesOffset = sectionReader.readUint32();     // 0x18
-  m_fogOffset = sectionReader.readUint32();            // 0x1C
-  m_stagesOffset = sectionReader.readUint32();         // 0x20
-  m_indirectStagesOffset = sectionReader.readUint32(); // 0x24
-  m_zmodesOffset = sectionReader.readUint32();         // 0x28
-  m_konstSelsOffset = sectionReader.readUint32();      // 0x2C
-  m_tevColorsOffset = sectionReader.readUint32();      // 0x30
-  m_konstColorsOffset = sectionReader.readUint32();    // 0x34
+  // m_materialNamesOffset = sectionReader.readUint32();  // 0x10
+  // m_alphaComparesOffset = sectionReader.readUint32();  // 0x14
+  // m_blendModesOffset = sectionReader.readUint32();     // 0x18
+  // m_fogOffset = sectionReader.readUint32();            // 0x1C
+  // m_stagesOffset = sectionReader.readUint32();         // 0x20
+  // m_indirectStagesOffset = sectionReader.readUint32(); // 0x24
+  // m_zmodesOffset = sectionReader.readUint32();         // 0x28
+  // m_konstSelsOffset = sectionReader.readUint32();      // 0x2C
+  // m_tevColorsOffset = sectionReader.readUint32();      // 0x30
+  // m_konstColorsOffset = sectionReader.readUint32();    // 0x34
 
-  sectionReader.seekAlign16();
+  // sectionReader.seekAlign16();
 }
 
 void ChirpBinaryMaterials::ReadMaterial(SectionReader& sectionReader) {
-  MaterialData rawData;
-  ReadMaterialData(sectionReader, rawData);
+  // MaterialData rawData;
+  // ReadMaterialData(sectionReader, rawData);
 
-  s64 nextMatPos =
-      SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::MaterialNames), rawData.m_nameOffset);
-  Material* newMaterial =
-      CreateMaterial(sectionReader.readString(rawData.m_nameSize), rawData.m_colorUpdate,
-                     rawData.m_alphaUpdate, rawData.m_zCompLoc, rawData.m_dither);
+  // s64 nextMatPos =
+  //     SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::MaterialNames),
+  //     rawData.m_nameOffset);
+  // Material* newMaterial =
+  //     CreateMaterial(sectionReader.readString(rawData.m_nameSize), rawData.m_colorUpdate,
+  //                    rawData.m_alphaUpdate, rawData.m_zCompLoc, rawData.m_dither);
 
-  // Alpha compare.
-  SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::AlphaCompares),
-              rawData.m_alphaCompareOffset);
-  ReadAlphaCompare(sectionReader, newMaterial->GetAlphaCompare());
+  //// Alpha compare.
+  // SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::AlphaCompares),
+  //             rawData.m_alphaCompareOffset);
+  // ReadAlphaCompare(sectionReader, newMaterial->GetAlphaCompare());
 
-  // Blend mode.
-  SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::BlendModes), rawData.m_blendModeOffset);
-  ReadBlendMode(sectionReader, newMaterial->GetBlendMode());
+  //// Blend mode.
+  // SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::BlendModes), rawData.m_blendModeOffset);
+  // ReadBlendMode(sectionReader, newMaterial->GetBlendMode());
 
-  // Z-mode.
-  SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::ZModes), rawData.m_zModeOffset);
-  ReadZMode(sectionReader, newMaterial->GetZMode());
+  //// Z-mode.
+  // SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::ZModes), rawData.m_zModeOffset);
+  // ReadZMode(sectionReader, newMaterial->GetZMode());
 
-  // Konst sels.
-  SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::KonstSels), rawData.m_konstSelsOffset);
-  for (u32 k = 0; k < 16; k++) {
-    newMaterial->SetKonstColorSel(k, static_cast< TevKColorSel >(sectionReader.readUByte()));
-    newMaterial->SetKonstAlphaSel(k, static_cast< TevKAlphaSel >(sectionReader.readUByte()));
-  }
+  //// Konst sels.
+  // SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::KonstSels), rawData.m_konstSelsOffset);
+  // for (u32 k = 0; k < 16; k++) {
+  //   newMaterial->SetKonstColorSel(k, static_cast< TevKColorSel >(sectionReader.readUByte()));
+  //   newMaterial->SetKonstAlphaSel(k, static_cast< TevKAlphaSel >(sectionReader.readUByte()));
+  // }
 
-  // TEV colors.
-  SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::TevColors), rawData.m_tevColorsOffset);
-  for (u32 t = 0; t < 16; t++) {
-    math::ChirpColor tevColor(sectionReader.readUByte(), sectionReader.readUByte(),
-                              sectionReader.readUByte(), sectionReader.readUByte());
-    newMaterial->SetTevColor(t, tevColor);
-  }
+  //// TEV colors.
+  // SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::TevColors), rawData.m_tevColorsOffset);
+  // for (u32 t = 0; t < 16; t++) {
+  //   math::ChirpColor tevColor(sectionReader.readUByte(), sectionReader.readUByte(),
+  //                             sectionReader.readUByte(), sectionReader.readUByte());
+  //   newMaterial->SetTevColor(t, tevColor);
+  // }
 
-  // Konst colors.
-  SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::KonstColors), rawData.m_konstColorsOffset);
-  for (u32 t = 0; t < 16; t++) {
-    math::ChirpColor konstColor(sectionReader.readUByte(), sectionReader.readUByte(),
-                                sectionReader.readUByte(), sectionReader.readUByte());
-    newMaterial->SetKonstColor(t, konstColor);
-  }
+  //// Konst colors.
+  // SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::KonstColors),
+  // rawData.m_konstColorsOffset); for (u32 t = 0; t < 16; t++) {
+  //   math::ChirpColor konstColor(sectionReader.readUByte(), sectionReader.readUByte(),
+  //                               sectionReader.readUByte(), sectionReader.readUByte());
+  //   newMaterial->SetKonstColor(t, konstColor);
+  // }
 
-  // TEV stages.
-  SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Stages), rawData.m_firstStageOffset);
-  for (u32 s = 0; s < rawData.m_stageCount; s++) {
-    TevStage* newStage = newMaterial->CreateStage();
-    ReadTevStage(sectionReader, *newStage);
-  }
+  //// TEV stages.
+  // SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Stages), rawData.m_firstStageOffset);
+  // for (u32 s = 0; s < rawData.m_stageCount; s++) {
+  //   TevStage* newStage = newMaterial->CreateStage();
+  //   ReadTevStage(sectionReader, *newStage);
+  // }
 
-  // Fog, if present.
-  if (rawData.m_fogOffset != std::numeric_limits< u32 >::max()) {
-    SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Fog), rawData.m_fogOffset);
-    ReadFog(sectionReader, newMaterial->GetFog());
-  }
+  //// Fog, if present.
+  // if (rawData.m_fogOffset != std::numeric_limits< u32 >::max()) {
+  //   SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Fog), rawData.m_fogOffset);
+  //   ReadFog(sectionReader, newMaterial->GetFog());
+  // }
 
-  // Indirect texture stages, if present.
-  if (rawData.m_indirectStagesOffset != std::numeric_limits< u32 >::max()) {
-    SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::IndirectStages),
-                rawData.m_indirectStagesOffset);
-    // TODO: indirect stage reading.
-  }
+  //// Indirect texture stages, if present.
+  // if (rawData.m_indirectStagesOffset != std::numeric_limits< u32 >::max()) {
+  //   SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::IndirectStages),
+  //               rawData.m_indirectStagesOffset);
+  //   // TODO: indirect stage reading.
+  // }
 
-  sectionReader.seek(nextMatPos, athena::SeekOrigin::Begin);
+  // sectionReader.seek(nextMatPos, athena::SeekOrigin::Begin);
 }
 
 s64 ChirpBinaryMaterials::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
-  ChunkId chunk = static_cast< ChunkId >(chunkId);
+  return 0;
+  // ChunkId chunk = static_cast< ChunkId >(chunkId);
 
-  u32 chunkOffset{0};
-  switch (chunk) {
-  case ChunkId::AlphaCompares:
-    chunkOffset = m_alphaComparesOffset;
-    break;
-  case ChunkId::BlendModes:
-    chunkOffset = m_blendModesOffset;
-    break;
-  case ChunkId::Fog:
-    chunkOffset = m_fogOffset;
-    break;
-  case ChunkId::IndirectStages:
-    chunkOffset = m_indirectStagesOffset;
-    break;
-  case ChunkId::MaterialNames:
-    chunkOffset = m_materialNamesOffset;
-    break;
-  case ChunkId::Stages:
-    chunkOffset = m_stagesOffset;
-    break;
-  case ChunkId::ZModes:
-    chunkOffset = m_zmodesOffset;
-    break;
-  case ChunkId::KonstSels:
-    chunkOffset = m_konstSelsOffset;
-    break;
-  case ChunkId::TevColors:
-    chunkOffset = m_tevColorsOffset;
-    break;
-  case ChunkId::KonstColors:
-    chunkOffset = m_konstColorsOffset;
-    break;
-  default:
-    break;
-  }
+  // u32 chunkOffset{0};
+  // switch (chunk) {
+  // case ChunkId::AlphaCompares:
+  //   chunkOffset = m_alphaComparesOffset;
+  //   break;
+  // case ChunkId::BlendModes:
+  //   chunkOffset = m_blendModesOffset;
+  //   break;
+  // case ChunkId::Fog:
+  //   chunkOffset = m_fogOffset;
+  //   break;
+  // case ChunkId::IndirectStages:
+  //   chunkOffset = m_indirectStagesOffset;
+  //   break;
+  // case ChunkId::MaterialNames:
+  //   chunkOffset = m_materialNamesOffset;
+  //   break;
+  // case ChunkId::Stages:
+  //   chunkOffset = m_stagesOffset;
+  //   break;
+  // case ChunkId::ZModes:
+  //   chunkOffset = m_zmodesOffset;
+  //   break;
+  // case ChunkId::KonstSels:
+  //   chunkOffset = m_konstSelsOffset;
+  //   break;
+  // case ChunkId::TevColors:
+  //   chunkOffset = m_tevColorsOffset;
+  //   break;
+  // case ChunkId::KonstColors:
+  //   chunkOffset = m_konstColorsOffset;
+  //   break;
+  // default:
+  //   break;
+  // }
 
-  s64 curPos = sectionReader.position();
-  sectionReader.seek(m_offset + chunkOffset + dataOffset, athena::SeekOrigin::Begin);
+  // s64 curPos = sectionReader.position();
+  // sectionReader.seek(m_offset + chunkOffset + dataOffset, athena::SeekOrigin::Begin);
 
-  return curPos;
+  // return curPos;
 }
 
 std::unique_ptr< ChirpBinarySection > ChirpBinaryMaterials::CreateMATSection(u32 size,
