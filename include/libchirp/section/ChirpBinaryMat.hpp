@@ -4,8 +4,15 @@
 #include "libchirp/gx/material/Material.hpp"
 #include "libchirp/section/ChirpBinarySection.hpp"
 
+namespace chirp::gx::material {
+class CombinerComponent;
+class ColorComponent;
+class TextureComponent;
+}
+
 namespace chirp::binary {
-using ChirpMaterialMap = std::unordered_map< std::string, std::unique_ptr< gx::material::Material > >;
+using ChirpMaterialMap =
+    std::unordered_map< std::string, std::unique_ptr< gx::material::Material > >;
 
 class ChirpBinaryMaterials : public ChirpBinarySection {
 public:
@@ -18,8 +25,8 @@ public:
 
   gx::material::Material* GetMaterial(const std::string& name) const;
   gx::material::Material* CreateMaterial(const std::string& name, bool colorUpdate = false,
-                               bool alphaUpdate = false, bool zCompLoc = false,
-                               bool dither = false);
+                                         bool alphaUpdate = false, bool zCompLoc = false,
+                                         bool dither = false);
 
   ChirpMaterialMap& GetMaterials() { return m_materials; }
 
@@ -49,17 +56,26 @@ private:
 
   void ReadOffsets(SectionReader& sectionReader);
   void ReadMaterial(SectionReader& sectionReader);
+  bool ReadCombinerCompEntries(SectionReader& inStream,
+                               gx::material::CombinerComponent& combinerComp, u32 tevStageCount);
+  bool ReadColorCompEntries(SectionReader& inStream, gx::material::ColorComponent& colorComp,
+                            u32 tevStageCount);
+  bool ReadTextureComponent(SectionReader& inStream, gx::material::TextureComponent& texComp);
 
+  u32 m_combinerCompEntriesOffset{0};
+  u32 m_colorCompEntriesOffset{0};
+  u32 m_textureComponentsOffset{0};
+  u32 m_texNamesOffset{0};
+  u32 m_texCoordGensOffset{0};
+  u32 m_texCoordMatricesOffset{0};
+  u32 m_lightingCompEntriesOffset{0};
+  u32 m_pixelEngineComponentsOffset{0};
   u32 m_alphaComparesOffset{0};
   u32 m_blendModesOffset{0};
   u32 m_fogOffset{0};
-  u32 m_indirectStagesOffset{0};
-  u32 m_materialNamesOffset{0};
-  u32 m_stagesOffset{0};
-  u32 m_zmodesOffset{0};
-  u32 m_konstSelsOffset{0};
-  u32 m_tevColorsOffset{0};
-  u32 m_konstColorsOffset{0};
+  u32 m_zModesOffset{0};
+  u32 m_indirectTexComponentsOffset{0};
+  u32 m_stringTableOffset{0};
 
   ChirpMaterialMap m_materials;
 };

@@ -8,27 +8,23 @@ namespace {
 using namespace chirp::binary;
 using namespace chirp::gx;
 
-struct MaterialData {
+struct MaterialBinaryEntry {
   /*0x00*/ u16 m_nameSize;
-  /*0x02*/ u16 m_stageCount;
-  /*0x04*/ bool m_colorUpdate;
-  /*0x05*/ bool m_alphaUpdate;
-  /*0x06*/ bool m_zCompLoc;
-  /*0x07*/ bool m_dither;
+  /*0x02*/ u16 m_tevStageCount;
+  /*0x04*/ u16 m_lightChannelCount;
+  /*0x06*/ u16 m_pad0;
 
   /*0x08*/ u32 m_nameOffset;
-  /*0x0C*/ u32 m_firstStageOffset;
-  /*0x10*/ u32 m_alphaCompareOffset;
-  /*0x14*/ u32 m_blendModeOffset;
-  /*0x18*/ u32 m_fogOffset;
-  /*0x1C*/ u32 m_indirectStagesOffset;
-  /*0x20*/ u32 m_zModeOffset;
-  /*0x24*/ u32 m_konstSelsOffset;
-  /*0x28*/ u32 m_tevColorsOffset;
-  /*0x2C*/ u32 m_konstColorsOffset;
+  /*0x0C*/ u32 m_firstCombinerCompEntryOffset;
+  /*0x10*/ u32 m_firstColorCompEntryOffset;
+  /*0x14*/ u32 m_textureComponentOffset;
+  /*0x18*/ u32 m_firstLightingCompEntryOffset;
+  /*0x1C*/ u32 m_indirectTexComponentOffset;
+  /*0x20*/ u32 m_pixelEngineComponentOffset;
 };
 
-void ReadMaterialData(SectionReader& sectionReader, MaterialData& outData) {
+MaterialBinaryEntry ReadMaterialData(SectionReader& sectionReader) {
+  MaterialBinaryEntry matData;
   outData.m_nameSize = sectionReader.readUint16();
   outData.m_stageCount = sectionReader.readUint16();
   outData.m_colorUpdate = sectionReader.readBool();
@@ -46,6 +42,8 @@ void ReadMaterialData(SectionReader& sectionReader, MaterialData& outData) {
   outData.m_konstSelsOffset = sectionReader.readUint32();
   outData.m_tevColorsOffset = sectionReader.readUint32();
   outData.m_konstColorsOffset = sectionReader.readUint32();
+
+  return matData;
 }
 
 void ReadAlphaCompare(SectionReader& sectionReader, AlphaCompare& outAlphaComp) {
@@ -171,89 +169,230 @@ gx::material::Material* ChirpBinaryMaterials::CreateMaterial(const std::string& 
   // return m_materials[name].get();
 }
 
-void ChirpBinaryMaterials::ReadOffsets(SectionReader& sectionReader) {
-  // m_materialNamesOffset = sectionReader.readUint32();  // 0x10
-  // m_alphaComparesOffset = sectionReader.readUint32();  // 0x14
-  // m_blendModesOffset = sectionReader.readUint32();     // 0x18
-  // m_fogOffset = sectionReader.readUint32();            // 0x1C
-  // m_stagesOffset = sectionReader.readUint32();         // 0x20
-  // m_indirectStagesOffset = sectionReader.readUint32(); // 0x24
-  // m_zmodesOffset = sectionReader.readUint32();         // 0x28
-  // m_konstSelsOffset = sectionReader.readUint32();      // 0x2C
-  // m_tevColorsOffset = sectionReader.readUint32();      // 0x30
-  // m_konstColorsOffset = sectionReader.readUint32();    // 0x34
-
-  // sectionReader.seekAlign16();
+void ChirpBinaryMaterials::ReadOffsets(SectionReader& inStream) {
+  m_combinerCompEntriesOffset = inStream.readUint32();
+  m_colorCompEntriesOffset = inStream.readUint32();
+  m_textureComponentsOffset = inStream.readUint32();
+  m_texNamesOffset = inStream.readUint32();
+  m_texCoordGensOffset = inStream.readUint32();
+  m_texCoordMatricesOffset = inStream.readUint32();
+  m_lightingCompEntriesOffset = inStream.readUint32();
+  m_pixelEngineComponentsOffset = inStream.readUint32();
+  m_alphaComparesOffset = inStream.readUint32();
+  m_blendModesOffset = inStream.readUint32();
+  m_fogOffset = inStream.readUint32();
+  m_zModesOffset = inStream.readUint32();
+  m_indirectTexComponentsOffset = inStream.readUint32();
+  m_stringTableOffset = inStream.readUint32();
 }
 
-void ChirpBinaryMaterials::ReadMaterial(SectionReader& sectionReader) {
-  // MaterialData rawData;
-  // ReadMaterialData(sectionReader, rawData);
+bool ChirpBinaryMaterials::ReadCombinerCompEntries(SectionReader& inStream,
+                                                   material::CombinerComponent& combinerComp,
+                                                   u32 tevStageCount) {
+  if (tevStageCount == 0 || tevStageCount > kMaxTevStageCount) {
+    return false;
+  }
 
-  // s64 nextMatPos =
-  //     SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::MaterialNames),
-  //     rawData.m_nameOffset);
-  // Material* newMaterial =
-  //     CreateMaterial(sectionReader.readString(rawData.m_nameSize), rawData.m_colorUpdate,
-  //                    rawData.m_alphaUpdate, rawData.m_zCompLoc, rawData.m_dither);
+  for (u32 i = 0; i < tevStageCount; i++) {
+    material::TevStage* newStage = combinerComp.AddTevStage();
+    if (!newStage) {
+      return false;
+    }
 
-  //// Alpha compare.
-  // SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::AlphaCompares),
-  //             rawData.m_alphaCompareOffset);
-  // ReadAlphaCompare(sectionReader, newMaterial->GetAlphaCompare());
+    // Read color combiner.
+    newStage->m_colorCombiner.m_colorArgA = static_cast< gx::TevColorArg >(inStream.readUByte());
+    newStage->m_colorCombiner.m_colorArgB = static_cast< gx::TevColorArg >(inStream.readUByte());
+    newStage->m_colorCombiner.m_colorArgC = static_cast< gx::TevColorArg >(inStream.readUByte());
+    newStage->m_colorCombiner.m_colorArgD = static_cast< gx::TevColorArg >(inStream.readUByte());
+    newStage->m_colorCombiner.m_colorOp = static_cast< gx::TevOp >(inStream.readUByte());
+    newStage->m_colorCombiner.m_colorBias = static_cast< gx::TevBias >(inStream.readUByte());
+    newStage->m_colorCombiner.m_colorScale = static_cast< gx::TevScale >(inStream.readUByte());
+    newStage->m_colorCombiner.m_colorClamp = inStream.readBool();
+    newStage->m_colorCombiner.m_colorOutReg = static_cast< gx::TevRegId >(inStream.readUByte());
 
-  //// Blend mode.
-  // SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::BlendModes), rawData.m_blendModeOffset);
-  // ReadBlendMode(sectionReader, newMaterial->GetBlendMode());
+    // Read alpha combiner.
+    newStage->m_alphaCombiner.m_alphaArgA = static_cast< gx::TevAlphaArg >(inStream.readUByte());
+    newStage->m_alphaCombiner.m_alphaArgB = static_cast< gx::TevAlphaArg >(inStream.readUByte());
+    newStage->m_alphaCombiner.m_alphaArgC = static_cast< gx::TevAlphaArg >(inStream.readUByte());
+    newStage->m_alphaCombiner.m_alphaArgD = static_cast< gx::TevAlphaArg >(inStream.readUByte());
+    newStage->m_alphaCombiner.m_alphaOp = static_cast< gx::TevOp >(inStream.readUByte());
+    newStage->m_alphaCombiner.m_alphaBias = static_cast< gx::TevBias >(inStream.readUByte());
+    newStage->m_alphaCombiner.m_alphaScale = static_cast< gx::TevScale >(inStream.readUByte());
+    newStage->m_alphaCombiner.m_alphaClamp = inStream.readBool();
+    newStage->m_alphaCombiner.m_alphaOutReg = static_cast< gx::TevRegId >(inStream.readUByte());
 
-  //// Z-mode.
-  // SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::ZModes), rawData.m_zModeOffset);
-  // ReadZMode(sectionReader, newMaterial->GetZMode());
+    // Read TEV order.
+    newStage->m_tevOrder.m_texCoordId = static_cast< gx::TexCoordId >(inStream.readUByte());
+    newStage->m_tevOrder.m_texMapId = static_cast< gx::TexMapId >(inStream.readUByte());
+    newStage->m_tevOrder.m_channelId = static_cast< gx::ChannelId >(inStream.readUByte());
 
-  //// Konst sels.
-  // SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::KonstSels), rawData.m_konstSelsOffset);
-  // for (u32 k = 0; k < 16; k++) {
-  //   newMaterial->SetKonstColorSel(k, static_cast< TevKColorSel >(sectionReader.readUByte()));
-  //   newMaterial->SetKonstAlphaSel(k, static_cast< TevKAlphaSel >(sectionReader.readUByte()));
-  // }
+    // Skip 4 padding bytes.
+    inStream.seekAlign4();
+  }
 
-  //// TEV colors.
-  // SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::TevColors), rawData.m_tevColorsOffset);
-  // for (u32 t = 0; t < 16; t++) {
-  //   math::ChirpColor tevColor(sectionReader.readUByte(), sectionReader.readUByte(),
-  //                             sectionReader.readUByte(), sectionReader.readUByte());
-  //   newMaterial->SetTevColor(t, tevColor);
-  // }
+  return true;
+}
 
-  //// Konst colors.
-  // SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::KonstColors),
-  // rawData.m_konstColorsOffset); for (u32 t = 0; t < 16; t++) {
-  //   math::ChirpColor konstColor(sectionReader.readUByte(), sectionReader.readUByte(),
-  //                               sectionReader.readUByte(), sectionReader.readUByte());
-  //   newMaterial->SetKonstColor(t, konstColor);
-  // }
+bool ChirpBinaryMaterials::ReadColorCompEntries(SectionReader& inStream,
+                                                gx::material::ColorComponent& colorComp,
+                                                u32 tevStageCount) {
+  if (tevStageCount == 0 || tevStageCount > kMaxTevStageCount) {
+    return false;
+  }
 
-  //// TEV stages.
-  // SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Stages), rawData.m_firstStageOffset);
-  // for (u32 s = 0; s < rawData.m_stageCount; s++) {
-  //   TevStage* newStage = newMaterial->CreateStage();
-  //   ReadTevStage(sectionReader, *newStage);
-  // }
+  for (u32 i = 0; i < tevStageCount; i++) {
+    // Read konst sels.
+    *colorComp.GetTevKonstColorSel(i) = static_cast< gx::TevKColorSel >(inStream.readUByte());
+    *colorComp.GetTevKonstAlphaSel(i) = static_cast< gx::TevKAlphaSel >(inStream.readUByte());
 
-  //// Fog, if present.
-  // if (rawData.m_fogOffset != std::numeric_limits< u32 >::max()) {
-  //   SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::Fog), rawData.m_fogOffset);
-  //   ReadFog(sectionReader, newMaterial->GetFog());
-  // }
+    // Read swap sels.
+    *colorComp.GetTevKonstSwapSel(i) = static_cast< gx::TevSwapSel >(inStream.readUByte());
+    *colorComp.GetTevTexSwapSel(i) = static_cast< gx::TevSwapSel >(inStream.readUByte());
 
-  //// Indirect texture stages, if present.
-  // if (rawData.m_indirectStagesOffset != std::numeric_limits< u32 >::max()) {
-  //   SeekToChunk(sectionReader, static_cast< u8 >(ChunkId::IndirectStages),
-  //               rawData.m_indirectStagesOffset);
-  //   // TODO: indirect stage reading.
-  // }
+    // Read reg colors.
+    for (u32 regColorIdx = 0; regColorIdx < static_cast< u32 >(gx::TevRegId::Max); regColorIdx++) {
+      math::ChirpColorS10* regColor =
+          colorComp.GetTevRegColor(i, static_cast< gx::TevRegId >(regColorIdx));
+      *regColor = math::ChirpColorS10{inStream.readInt16(), inStream.readInt16(),
+                                      inStream.readInt16(), inStream.readInt16()};
+    }
 
-  // sectionReader.seek(nextMatPos, athena::SeekOrigin::Begin);
+    // Read konst colors.
+    for (u32 konstColorIdx = 0; konstColorIdx < static_cast< u32 >(gx::TevKColorId::Max);
+         konstColorIdx++) {
+      math::ChirpColor* konstColor =
+          colorComp.GetTevKonstColor(i, static_cast< gx::TevKColorId >(konstColorIdx));
+      *konstColor = math::ChirpColor{inStream.readUByte(), inStream.readUByte(),
+                                     inStream.readUByte(), inStream.readUByte()};
+    }
+
+    // Read swap tables.
+    for (u32 swapTableIdx = 0; swapTableIdx < static_cast< u32 >(gx::TevSwapSel::SwapSel_Max);
+         swapTableIdx++) {
+      gx::material::TevSwapTable& swapTable =
+          *colorComp.GetTevSwapTable(i, static_cast< gx::TevSwapSel >(swapTableIdx));
+
+      swapTable[0] = static_cast< gx::TevColorChan >(inStream.readUByte());
+      swapTable[1] = static_cast< gx::TevColorChan >(inStream.readUByte());
+      swapTable[2] = static_cast< gx::TevColorChan >(inStream.readUByte());
+      swapTable[3] = static_cast< gx::TevColorChan >(inStream.readUByte());
+    }
+
+    // No padding to skip.
+  }
+
+  return true;
+}
+
+bool ChirpBinaryMaterials::ReadTextureComponent(SectionReader& inStream,
+                                                gx::material::TextureComponent& texComp) {
+  u16 texNameCount = inStream.readUint16();
+  u16 texGenCount = inStream.readUint16();
+  u16 texMtxCount = inStream.readUint16();
+  inStream.seekAlign4();
+
+  u32 firstTexNameOffset = inStream.readUint32();
+  u32 firstTexGenOffset = inStream.readUint32();
+  u32 firstTexMtxOffset = inStream.readUint32();
+
+  // Read texture names.
+  SeekToChunk(inStream, static_cast< u8 >(ChunkId::TexNames), firstTexNameOffset);
+  for (u32 texIdx = 0; texIdx < texNameCount; texIdx++) {
+    u16 texNameSize = inStream.readUint16();
+    inStream.seekAlign4();
+    u32 texNameOffset = inStream.readUint32();
+
+    auto nextNamePos =
+        SeekToChunk(inStream, static_cast< u8 >(ChunkId::StringTable), texNameOffset);
+    texComp.AddTexture(inStream.readString(texNameSize));
+
+    inStream.seek(nextNamePos, athena::SeekOrigin::Begin);
+  }
+
+  // Read tex coord gens.
+  SeekToChunk(inStream, static_cast< u8 >(ChunkId::TexCoordGens), firstTexGenOffset);
+  for (u16 texGenIdx = 0; texGenIdx < texGenCount; texGenIdx++) {
+    *texComp.AddTexCoordGen() = {static_cast< gx::TexGenType >(inStream.readUByte()),
+                                 static_cast< gx::TexGenSrc >(inStream.readUByte()),
+                                 static_cast< gx::TexMtx >(inStream.readUByte())};
+
+    // Skip 1 padding byte.
+    inStream.seekAlign4();
+  }
+
+  // Read texture matrices.
+  SeekToChunk(inStream, static_cast< u8 >(ChunkId::TexCoordMatrices), firstTexMtxOffset);
+  for (u16 texMtxIdx = 0; texMtxIdx < texMtxCount; texMtxIdx++) {
+    gx::material::TexCoordMatrix& newTexMtx = *texComp.AddTexCoordMatrix();
+    newTexMtx.m_type = static_cast< gx::TexMtxType >(inStream.readUByte());
+
+    // Skip 3 padding bytes.
+    inStream.seekAlign4();
+
+    nwTexMtx.m_mtx = inStream.readMatrix3x4();
+
+    // No padding to skip.
+  }
+
+  return true;
+}
+
+bool ChirpBinaryMaterials::Import(SectionReader& inStream) {
+  ReadOffsets(inStream);
+  inStream.seekAlign16();
+
+  for (u32 i = 0; i < m_elementCount; i++) {
+    MaterialBinaryEntry matData = ReadMaterialData(inStream);
+
+    auto nextMatPos =
+        SeekToChunk(inStream, static_cast< u8 >(ChunkId::StringTable), matData.m_nameOffset);
+    std::string newMatName = inStream.readString(matData.m_nameSize);
+
+    gx::Material* newMaterial = CreateMaterial(newMatName);
+    if (!newMaterial) {
+      std::cout << "Failed to create material named \"" << newMatName << "\"." << std::endl;
+      return false;
+    }
+
+    // Read in the combiner component.
+    SeekToChunk(inStream, static_cast< u8 >(ChunkId::CombinerComponents),
+                matData.m_firstCombinerCompEntry);
+    if (!ReadCombinerCompEntries(inStream, newMaterial->GetCombinerComponent(),
+                                 matData.m_tevStageCount)) {
+      std::cout << "Failed to read combiner component for material named \"" << newMatName << "\"."
+                << std::endl;
+      return false;
+    }
+
+    // Read in the color component.
+    SeekToChunk(inStream, static_cast< u8 >(ChunkId::ColorComponents),
+                matData.m_firstColorCompEntryOffset);
+    ReadColorCompEntries(inStream, newMaterial->GetColorComponent(), matData.m_tevStageCount);
+
+    // Read in the texture component.
+    SeekToChunk(inStream, static_cast< u8 >(ChunkId::TextureComponents),
+                matData.m_textureComponentOffset);
+    ReadTextureComponent(inStream, newMaterial->GetTextureComponent());
+
+    // Read in the lighting component.
+    SeekToChunk(inStream, static_cast< u8 >(ChunkId::LightingComponents),
+                matData.m_firstLightingCompEntryOffset);
+    ReadLightingCompEntries(inStream, newMaterial->GetLightingComponent(),
+                            matData.m_lightChannelCount);
+
+    // Read in indirect texturing component.
+    SeekToChunk(inStream, static_cast< u8 >(ChunkId::IndirectTexComponents),
+                matData.m_indirectTexComponentOffset);
+    ReadIndirectTexComponent(inStream, newMaterial->GetIndirectTexComponent());
+
+    // Read in pixel engine component.
+    SeekToChunk(inStream, static_cast< u8 >(ChunkId::PixelEngineComponents),
+                matData.m_pixelEngineComponentOffset);
+    ReadPixelEngineComponent(inStream, newMaterial->GetPixelEngineComponent());
+
+    // Seek back to the start of the next material entry.
+    inStream.seek(nextMatPos, athena::SeekOrigin::Begin);
+  }
 }
 
 s64 ChirpBinaryMaterials::SeekToChunk(SectionReader& sectionReader, u8 chunkId, u32 dataOffset) {
@@ -308,6 +447,7 @@ std::unique_ptr< ChirpBinarySection > ChirpBinaryMaterials::CreateMATSection(u32
                                                                              u16 versionMinor) {
   return std::make_unique< ChirpBinaryMaterials >(size, elementCount, versionMajor, versionMinor);
 }
+
 std::unique_ptr< ChirpBinarySection >
 ChirpBinaryMaterials::CreateMATSectionWithOffset(u64 offset, u32 size, u32 elementCount,
                                                  u16 versionMajor, u16 versionMinor) {
