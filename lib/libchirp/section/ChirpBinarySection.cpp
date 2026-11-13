@@ -8,9 +8,9 @@
 
 namespace chirp::binary {
 math::ChirpMatrix3x4 SectionReader::readMatrix3x4() {
-  return math::ChirpMatrix3x4({{readFloat(), readFloat(), readFloat(), readFloat()},
-                               {readFloat(), readFloat(), readFloat(), readFloat()},
-                               {readFloat(), readFloat(), readFloat(), readFloat()}});
+  return math::ChirpMatrix3x4{{readFloat(), readFloat(), readFloat(), readFloat()},
+                              {readFloat(), readFloat(), readFloat(), readFloat()},
+                              {readFloat(), readFloat(), readFloat(), readFloat()}};
 }
 
 void SectionWriter::writeVector3(const math::ChirpVector3& vec3) {

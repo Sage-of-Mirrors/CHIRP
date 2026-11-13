@@ -123,7 +123,7 @@ gx::material::Material* ChirpBinaryMaterials::GetMaterial(const std::string& nam
 }
 
 gx::material::Material* ChirpBinaryMaterials::CreateMaterial(const std::string& name) {
-  auto itr = m_materials.try_emplace(name);
+  auto itr = m_materials.try_emplace(name, std::make_unique< gx::material::Material >(name));
   if (!itr.second) {
     std::cout << "Attempted to add a material to ChirpBinaryMaterials named \"" << name
               << "\", but a material with that name already existed." << std::endl;
