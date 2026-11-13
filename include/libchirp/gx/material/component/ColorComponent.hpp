@@ -3,6 +3,7 @@
 #include "libchirp/ChirpCommon.hpp"
 #include "libchirp/gx/GXEnum.hpp"
 #include "libchirp/math/ChirpColor.hpp"
+#include "libchirp/math/ChirpColorS10.hpp"
 
 #include <array>
 
@@ -11,7 +12,7 @@ namespace chirp::gx::material {
 struct TevColors {
   static constexpr u32 kTevKonstRegColorCount{4};
 
-  std::array< math::ChirpColor, kTevKonstRegColorCount > m_tevRegColors;
+  std::array< math::ChirpColorS10, kTevKonstRegColorCount > m_tevRegColors;
   std::array< math::ChirpColor, kTevKonstRegColorCount > m_tevKonstColors;
 };
 
@@ -43,7 +44,7 @@ public:
 
   ColorComponent() {}
 
-  math::ChirpColor* GetTevRegColor(u32 stageIdx, TevRegId regId);
+  math::ChirpColorS10* GetTevRegColor(u32 stageIdx, TevRegId regId);
   math::ChirpColor* GetTevKonstColor(u32 stageIdx, TevKColorId konstColorId);
 
   TevKColorSel* GetTevKonstColorSel(u32 stageIdx);

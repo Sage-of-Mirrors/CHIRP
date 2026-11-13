@@ -6,6 +6,8 @@
 #include <vector>
 
 namespace chirp::gx::material {
+constexpr u32 kMaxTevStageCount{16};
+
 // Configures the calculation to perform to get the RGB components of the output color. Given color
 // inputs A, B, C, and D, the equation for the Add and Sub operations is:
 //

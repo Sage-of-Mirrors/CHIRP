@@ -1,11 +1,18 @@
 #include "libchirp/section/ChirpBinarySection.hpp"
 
 #include "libchirp/math/ChirpAabb.hpp"
+#include "libchirp/math/ChirpMatrix3x4.hpp"
 #include "libchirp/math/ChirpQuat.hpp"
 #include "libchirp/math/ChirpTransform.hpp"
 #include "libchirp/math/ChirpVector.hpp"
 
 namespace chirp::binary {
+math::ChirpMatrix3x4 SectionReader::readMatrix3x4() {
+  return math::ChirpMatrix3x4({{readFloat(), readFloat(), readFloat(), readFloat()},
+                               {readFloat(), readFloat(), readFloat(), readFloat()},
+                               {readFloat(), readFloat(), readFloat(), readFloat()}});
+}
+
 void SectionWriter::writeVector3(const math::ChirpVector3& vec3) {
   writeFloat(vec3.X());
   writeFloat(vec3.Y());

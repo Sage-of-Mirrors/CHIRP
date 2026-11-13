@@ -8,7 +8,10 @@ namespace chirp::gx::material {
 class CombinerComponent;
 class ColorComponent;
 class TextureComponent;
-}
+class LightingComponent;
+class IndirectTexComponent;
+class PixelEngineComponent;
+} // namespace chirp::gx::material
 
 namespace chirp::binary {
 using ChirpMaterialMap =
@@ -24,9 +27,7 @@ public:
   bool Export(SectionWriter& outStream) override;
 
   gx::material::Material* GetMaterial(const std::string& name) const;
-  gx::material::Material* CreateMaterial(const std::string& name, bool colorUpdate = false,
-                                         bool alphaUpdate = false, bool zCompLoc = false,
-                                         bool dither = false);
+  gx::material::Material* CreateMaterial(const std::string& name);
 
   ChirpMaterialMap& GetMaterials() { return m_materials; }
 
@@ -42,25 +43,35 @@ protected:
 
 private:
   enum class ChunkId : u8 {
+    CombinerComponents,
+    ColorComponents,
+    TextureComponents,
+    TextureNames,
+    TexCoordGens,
+    TexCoordMatrices,
+    LightingComponents,
+    PixelEngineComponents,
     AlphaCompares,
     BlendModes,
     Fog,
-    IndirectStages,
-    MaterialNames,
-    Stages,
     ZModes,
-    KonstSels,
-    TevColors,
-    KonstColors
+    IndirectTexComponents,
+    StringTable
   };
 
   void ReadOffsets(SectionReader& sectionReader);
-  void ReadMaterial(SectionReader& sectionReader);
   bool ReadCombinerCompEntries(SectionReader& inStream,
                                gx::material::CombinerComponent& combinerComp, u32 tevStageCount);
   bool ReadColorCompEntries(SectionReader& inStream, gx::material::ColorComponent& colorComp,
                             u32 tevStageCount);
   bool ReadTextureComponent(SectionReader& inStream, gx::material::TextureComponent& texComp);
+  bool ReadLightingCompEntries(SectionReader& inStream,
+                               gx::material::LightingComponent& lightingComp,
+                               u32 lightChannelCount);
+  bool ReadIndirectTexComponent(SectionReader& inStream,
+                                gx::material::IndirectTexComponent& indirectTexComp);
+  bool ReadPixelEngineComponent(SectionReader& inStream,
+                                gx::material::PixelEngineComponent& pixelEngineComp);
 
   u32 m_combinerCompEntriesOffset{0};
   u32 m_colorCompEntriesOffset{0};

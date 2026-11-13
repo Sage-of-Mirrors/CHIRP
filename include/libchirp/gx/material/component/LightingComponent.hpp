@@ -8,6 +8,8 @@
 #include <unordered_map>
 
 namespace chirp::gx::material {
+constexpr u32 kMaxLightChannelCount{static_cast< u32 >(gx::ChannelId::Alpha_0)};
+
 struct LightChannel {
   bool m_enabled{false};
 
@@ -31,7 +33,7 @@ struct LightChannel {
   AttenuationFn m_attenuationFunc;
 
   // Ambient colors to use when m_ambientColorSrc is Register. Otherwise, vertex colors are used.
-  std::array< math::ChirpColor, 2 > m_defaultAmbientColors;
+  std::array< math::ChirpColor, 2 > m_ambientColors;
   // Material colors to use when m_materialColorSrc is set to Register. Otherwise, vertex colors are
   // used.
   std::array< math::ChirpColor, 2 > m_materialColors;

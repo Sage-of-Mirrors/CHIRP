@@ -6,7 +6,7 @@
   }
 
 namespace chirp::gx::material {
-math::ChirpColor* ColorComponent::GetTevRegColor(u32 stageIdx, TevRegId regId) {
+math::ChirpColorS10* ColorComponent::GetTevRegColor(u32 stageIdx, TevRegId regId) {
   STAGE_INDEX_CHECK(stageIdx);
   if (regId >= TevRegId::Max) {
     return nullptr;

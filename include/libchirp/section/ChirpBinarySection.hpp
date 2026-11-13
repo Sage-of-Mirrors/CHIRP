@@ -7,10 +7,11 @@
 
 namespace chirp::math {
 class ChirpAabb;
-class ChirpQuaternion;
+class ChirpMatrix3x4;
 class ChirpTransform;
 class ChirpVector3;
 class ChirpVector4;
+class ChirpQuaternion;
 } // chirp::math
 
 namespace chirp::binary {
@@ -49,6 +50,8 @@ public:
     }
     return read;
   }
+
+  math::ChirpMatrix3x4 readMatrix3x4();
 
 private:
   athena::io::IStreamReader& m_inStream;

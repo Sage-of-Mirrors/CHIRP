@@ -24,13 +24,6 @@ struct BlendMode {
   gx::LogicOp m_operation;
 };
 
-struct FogRangeAdjust {
-  bool m_enabled;
-  u16 m_center;
-
-  u16 m_rangeValues[10];
-};
-
 struct Fog {
   gx::FogType m_type;
 
@@ -42,7 +35,9 @@ struct Fog {
 
   math::ChirpColor m_color;
 
-  FogRangeAdjust m_rangeAdust;
+  bool m_rangeAdjustEnabled;
+  u16 m_rangeAdjustCenter;
+  u16 m_rangeAdjustValues[10];
 };
 
 struct ZMode {
@@ -57,13 +52,10 @@ class PixelEngineComponent {
 public:
   PixelEngineComponent() {}
 
-  bool GetColorWritesEnabled() const { return m_colorWritesEnabled; }
-  bool GetAlphaWritesEnabled() const { return m_alphaWritesEnabled; }
-  bool GetDitheringEnabled() const { return m_ditheringEnabled; }
-
-  void SetColorWritesEnabled(bool enabled) { m_colorWritesEnabled = enabled; }
-  void SetAlphaWritesEnabled(bool enabled) { m_alphaWritesEnabled = enabled; }
-  void SetDitheringEnabled(bool enabled) { m_ditheringEnabled = enabled; }
+  bool& GetColorWritesEnabled() { return m_colorWritesEnabled; }
+  bool& GetAlphaWritesEnabled() { return m_alphaWritesEnabled; }
+  bool& GetDitheringEnabled() { return m_ditheringEnabled; }
+  gx::CullMode& GetCullMode() { return m_cullMode; }
 
   AlphaCompare& GetAlphaCompare() { return m_alphaCompare; }
   BlendMode& GetBlendMode() { return m_blendMode; }
@@ -74,6 +66,7 @@ private:
   bool m_colorWritesEnabled;
   bool m_alphaWritesEnabled;
   bool m_ditheringEnabled;
+  gx::CullMode m_cullMode;
 
   AlphaCompare m_alphaCompare;
   BlendMode m_blendMode;

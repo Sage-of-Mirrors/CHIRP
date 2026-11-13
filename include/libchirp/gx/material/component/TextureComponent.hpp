@@ -2,6 +2,7 @@
 
 #include "libchirp/ChirpCommon.hpp"
 #include "libchirp/gx/GXEnum.hpp"
+#include "libchirp/math/ChirpMatrix3x4.hpp"
 
 #include <array>
 #include <vector>
@@ -19,6 +20,8 @@ struct TexCoordGen {
 struct TexCoordMatrix {
   // Whether the matrix is 3x4 elements or 2x4 elements.
   TexMtxType m_type{TexMtxType::Mtx_3_4};
+
+  math::ChirpMatrix3x4 m_mtx;
 };
 
 class TextureComponent {
